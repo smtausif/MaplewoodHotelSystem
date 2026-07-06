@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ca.senecacollege.hotelreservation.hotelreservation.LauncherMenu"
+           prefWidth="1024" prefHeight="768"
+           styleClass="root-pane" stylesheets="@kiosk.css">
+
+    <ImageView fitWidth="1024" fitHeight="768" preserveRatio="false" opacity="0.18">
+        <image>
+            <Image url="@/lobby-background.jpg"/>
+        </image>
+    </ImageView>
+
+    <Region styleClass="cream-overlay"/>
+
+    <VBox alignment="TOP_CENTER" spacing="30">
+        <padding>
+            <Insets top="48" right="60" bottom="40" left="60"/>
+        </padding>
+
+        <!-- title -->
+        <VBox alignment="CENTER" spacing="6">
+            <Label text="Maplewood Grand" styleClass="menu-title"/>
+            <Label text="H O T E L   R E S E R V A T I O N   S Y S T E M" styleClass="hotel-sub"/>
+            <Label text="Milestone 1 UI prototype (JavaFX / FXML) — click a screen to open it."
+                   styleClass="menu-subtitle">
+                <VBox.margin>
+                    <Insets top="8"/>
+                </VBox.margin>
+            </Label>
+        </VBox>
+
+        <!-- kiosk section -->
+        <VBox spacing="14" alignment="TOP_CENTER">
+            <Label text="K I O S K   ·   S E L F - S E R V I C E" styleClass="section-label"/>
+            <GridPane hgap="18" vgap="14" alignment="CENTER">
+                <Button text="1 · Welcome" onAction="#openWelcome"
+                        styleClass="menu-btn, menu-btn-ready" prefWidth="280"
+                        GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <Button text="2 · Guests &amp; Dates" onAction="#openGuestsDates"
+                        styleClass="menu-btn, menu-btn-ready" prefWidth="280"
+                        GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                <Button text="3 · Room Selection" onAction="#openRoomSelection"
+                        styleClass="menu-btn, menu-btn-ready" prefWidth="280"
+                        GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                <Button text="4 · Add-ons" onAction="#openAddons"
+                        styleClass="menu-btn, menu-btn-ready" prefWidth="280"
+                        GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <Button text="5 · Estimate &amp; Confirm" onAction="#openReview"
+                        styleClass="menu-btn, menu-btn-ready" prefWidth="280"
+                        GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                <Button text="6 · Confirmation" onAction="#openConfirmation"
+                        styleClass="menu-btn, menu-btn-ready" prefWidth="280"
+                        GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+            </GridPane>
+        </VBox>
+
+        <!-- admin section -->
+        <VBox spacing="14" alignment="TOP_CENTER">
+            <Label text="A D M I N   ·   F R O N T   D E S K" styleClass="section-label"/>
+            <GridPane hgap="18" vgap="14" alignment="CENTER">
+                <Button text="Login" onAction="#openAdminLogin" styleClass="menu-btn, menu-btn-ready" prefWidth="280"
+                        GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <Button text="Dashboard &amp; Search" onAction="#openDashboard" styleClass="menu-btn, menu-btn-ready" prefWidth="280"
+                        GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                <Button text="Reservation Detail" onAction="#openReservationDetail" styleClass="menu-btn, menu-btn-ready" prefWidth="280"
+                        GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                <Button text="Payment &amp; Checkout" onAction="#openPayment" styleClass="menu-btn, menu-btn-ready" prefWidth="280"
+                        GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <Button text="Waitlist" onAction="#notBuilt" styleClass="menu-btn" prefWidth="280"
+                        GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                <Button text="Feedback" onAction="#notBuilt" styleClass="menu-btn" prefWidth="280"
+                        GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                <Button text="Reports" onAction="#notBuilt" styleClass="menu-btn" prefWidth="280"
+                        GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <Button text="Loyalty" onAction="#notBuilt" styleClass="menu-btn" prefWidth="280"
+                        GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            </GridPane>
+        </VBox>
+    </VBox>
+</StackPane>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ca.senecacollege.hotelreservation.hotelreservation.AdminReservationDetailPage"
+           prefWidth="1024" prefHeight="768"
+           styleClass="root-pane" stylesheets="@kiosk.css">
+
+    <VBox spacing="14">
+        <padding>
+            <Insets top="20" right="30" bottom="20" left="30"/>
+        </padding>
+
+        <!-- ============ HEADER ============ -->
+        <HBox alignment="CENTER_LEFT" spacing="12">
+            <Label fx:id="titleLabel" styleClass="detail-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Cancel" onAction="#onCancel" styleClass="back-nav-button-small"/>
+            <Button text="Save Changes" onAction="#onSave" styleClass="save-button"/>
+        </HBox>
+
+        <!-- ============ STAY DETAILS ============ -->
+        <Label text="Stay Details" styleClass="section-heading"/>
+
+        <HBox alignment="CENTER_LEFT" spacing="12">
+            <Label text="Check-in:" styleClass="filter-label" prefWidth="80"/>
+            <DatePicker fx:id="checkInPicker" prefWidth="190" editable="false"/>
+            <Label text="Check-out:" styleClass="filter-label" prefWidth="90">
+                <HBox.margin>
+                    <Insets left="26"/>
+                </HBox.margin>
+            </Label>
+            <DatePicker fx:id="checkOutPicker" prefWidth="190" editable="false"/>
+        </HBox>
+
+        <HBox alignment="CENTER_LEFT" spacing="12">
+            <Label text="Adults:" styleClass="filter-label" prefWidth="80"/>
+            <TextField fx:id="adultsField" prefWidth="190" styleClass="form-field"/>
+            <Label text="Children:" styleClass="filter-label" prefWidth="90">
+                <HBox.margin>
+                    <Insets left="26"/>
+                </HBox.margin>
+            </Label>
+            <TextField fx:id="childrenField" prefWidth="190" styleClass="form-field"/>
+        </HBox>
+
+        <Label fx:id="occupancyLabel" styleClass="filter-label"/>
+
+        <!-- ============ ROOMS TABLE ============ -->
+        <Label text="Rooms in this group (single unified bill)" styleClass="filter-label"/>
+
+        <TableView fx:id="roomsTable" prefHeight="190" maxHeight="190">
+            <columns>
+                <TableColumn fx:id="roomCol" text="Room" prefWidth="120"/>
+                <TableColumn fx:id="typeCol" text="Type" prefWidth="180"/>
+                <TableColumn fx:id="guestsCol" text="Guests" prefWidth="130"/>
+                <TableColumn fx:id="rateCol" text="Rate / night" prefWidth="160"/>
+                <TableColumn fx:id="nightsCol" text="Nights" prefWidth="120"/>
+            </columns>
+        </TableView>
+
+        <!-- ============ BILLING ============ -->
+        <VBox spacing="6">
+            <HBox spacing="10">
+                <Label text="Subtotal:" styleClass="filter-label" prefWidth="200"/>
+                <Label fx:id="subtotalValue" styleClass="filter-label"/>
+            </HBox>
+            <HBox spacing="10">
+                <Label fx:id="discountNameLabel" text="Discount:" styleClass="filter-label" prefWidth="200"/>
+                <Label fx:id="discountValue" styleClass="filter-label"/>
+            </HBox>
+            <HBox spacing="10">
+                <Label text="Tax (13%):" styleClass="filter-label" prefWidth="200"/>
+                <Label fx:id="taxValue" styleClass="filter-label"/>
+            </HBox>
+            <HBox spacing="10">
+                <Label text="Balance due:" styleClass="balance-label" prefWidth="200"/>
+                <Label fx:id="balanceValue" styleClass="balance-label"/>
+            </HBox>
+        </VBox>
+
+        <!-- ============ ACTIONS ============ -->
+        <HBox spacing="10">
+            <Button text="Take Payment" onAction="#onTakePayment" styleClass="back-nav-button-small"/>
+            <Button text="Apply Discount" onAction="#onApplyDiscount" styleClass="back-nav-button-small"/>
+            <Button text="Add Room" onAction="#onAddRoom" styleClass="back-nav-button-small"/>
+        </HBox>
+
+        <Region VBox.vgrow="ALWAYS"/>
+    </VBox>
+</StackPane>

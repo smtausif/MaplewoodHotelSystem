@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ca.senecacollege.hotelreservation.hotelreservation.AdminPaymentPage"
+           prefWidth="1024" prefHeight="768"
+           styleClass="root-pane" stylesheets="@kiosk.css">
+
+    <ImageView fitWidth="1024" fitHeight="768" preserveRatio="false" opacity="0.12">
+        <image>
+            <Image url="@/lobby-background.jpg"/>
+        </image>
+    </ImageView>
+
+    <Region styleClass="cream-overlay"/>
+
+    <VBox spacing="14">
+        <padding>
+            <Insets top="20" right="30" bottom="18" left="30"/>
+        </padding>
+
+        <!-- ============ TITLE BAR ============ -->
+        <HBox alignment="CENTER_LEFT" spacing="12">
+            <VBox spacing="2">
+                <Label text="Payment &amp; Checkout" styleClass="dashboard-title"/>
+                <Label text="F R O N T   D E S K   B I L L I N G" styleClass="portal-sub"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <VBox alignment="CENTER_RIGHT" spacing="4">
+                <Label fx:id="loggedInLabel" styleClass="note-label"/>
+                <Button text="Back to Dashboard" onAction="#onBack" styleClass="back-nav-button-small"/>
+            </VBox>
+        </HBox>
+
+        <!-- ============ RESERVATION BANNER ============ -->
+        <HBox styleClass="res-banner" alignment="CENTER_LEFT" spacing="14">
+            <padding>
+                <Insets top="12" right="18" bottom="12" left="18"/>
+            </padding>
+            <Label fx:id="resLabel" styleClass="banner-text"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="statusChip" styleClass="status-chip"/>
+        </HBox>
+
+        <!-- ============ TAKE A PAYMENT ============ -->
+        <VBox styleClass="panel-card" spacing="10">
+            <padding>
+                <Insets top="14" right="18" bottom="14" left="18"/>
+            </padding>
+            <Label text="T A K E   A   P A Y M E N T" styleClass="section-label"/>
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label text="Method:" styleClass="filter-label"/>
+                <ComboBox fx:id="methodCombo" prefWidth="120"/>
+                <Label text="Type:" styleClass="filter-label">
+                    <HBox.margin>
+                        <Insets left="12"/>
+                    </HBox.margin>
+                </Label>
+                <ComboBox fx:id="typeCombo" prefWidth="120"/>
+                <Label text="Amount:" styleClass="filter-label">
+                    <HBox.margin>
+                        <Insets left="12"/>
+                    </HBox.margin>
+                </Label>
+                <TextField fx:id="amountField" prefWidth="140" promptText="0.00"
+                           styleClass="form-field" onAction="#onRecordPayment"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Record Payment" onAction="#onRecordPayment" styleClass="save-button"/>
+            </HBox>
+        </VBox>
+
+        <!-- ============ PAYMENT HISTORY ============ -->
+        <Label text="P A Y M E N T   H I S T O R Y" styleClass="section-label"/>
+        <TableView fx:id="table" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="dateCol" text="Date" prefWidth="130"/>
+                <TableColumn fx:id="typeCol" text="Type" prefWidth="170"/>
+                <TableColumn fx:id="methodCol" text="Method" prefWidth="170"/>
+                <TableColumn fx:id="amountCol" text="Amount" prefWidth="180"/>
+                <TableColumn fx:id="byCol" text="By" prefWidth="180"/>
+            </columns>
+        </TableView>
+
+        <!-- ============ TOTALS + CHECKOUT ============ -->
+        <HBox alignment="CENTER_LEFT" spacing="14">
+            <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="170">
+                <Label text="TOTAL" styleClass="stat-title"/>
+                <Label fx:id="totalValue" styleClass="stat-value"/>
+            </VBox>
+            <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="170">
+                <Label text="PAID" styleClass="stat-title"/>
+                <Label fx:id="paidValue" styleClass="stat-value"/>
+            </VBox>
+            <VBox fx:id="balanceChip" styleClass="stat-chip" alignment="CENTER" prefWidth="200">
+                <Label text="BALANCE DUE" styleClass="stat-title"/>
+                <Label fx:id="balanceValue" styleClass="stat-value"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Generate Final Bill &amp; Check Out" onAction="#onCheckout" styleClass="next-button"/>
+        </HBox>
+
+        <Label text="Checkout is blocked until the balance is fully settled. After checkout, the rooms are freed and availability is updated."
+               styleClass="note-label"/>
+    </VBox>
+</StackPane>

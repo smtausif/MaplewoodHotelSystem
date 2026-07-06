@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<StackPane fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ca.senecacollege.hotelreservation.hotelreservation.AddonsPage"
+           prefWidth="1024" prefHeight="768"
+           styleClass="root-pane" stylesheets="@kiosk.css">
+
+    <ImageView fitWidth="1024" fitHeight="768" preserveRatio="false" opacity="0.3">
+        <image>
+            <Image url="@/lobby-background.jpg"/>
+        </image>
+    </ImageView>
+
+    <Region styleClass="cream-overlay"/>
+
+    <VBox alignment="TOP_CENTER" spacing="12">
+        <padding>
+            <Insets top="20" right="36" bottom="18" left="36"/>
+        </padding>
+
+        <!-- ============ HEADER ============ -->
+        <StackPane>
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Button onAction="#onRulesClicked" styleClass="rules-button"
+                        text="RULES &amp; REGULATIONS" contentDisplay="LEFT" graphicTextGap="10">
+                    <graphic>
+                        <SVGPath content="M14,2 H6 C4.9,2 4,2.9 4,4 v16 c0,1.1 0.9,2 2,2 h12 c1.1,0 2,-0.9 2,-2 V8 L14,2 z M16,18 H8 v-2 h8 V18 z M16,14 H8 v-2 h8 V14 z M13,9 V3.5 L18.5,9 H13 z"
+                                 scaleX="0.8" scaleY="0.8" styleClass="gold-icon"/>
+                    </graphic>
+                </Button>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <VBox alignment="TOP_RIGHT">
+                    <Label fx:id="clockLabel" text="10:48 AM" styleClass="clock-label"/>
+                    <Label fx:id="dateLabel" text="Saturday, July 4" styleClass="date-label"/>
+                </VBox>
+            </HBox>
+
+            <VBox alignment="CENTER" pickOnBounds="false" mouseTransparent="true">
+                <Label text="Maplewood Grand" styleClass="header-hotel-name"/>
+                <Label text="H O T E L" styleClass="header-hotel-sub"/>
+            </VBox>
+        </StackPane>
+
+        <!-- ============ TITLE ============ -->
+        <Label text="SELECT YOUR ADD-ONS" styleClass="page-title"/>
+
+        <!-- ============ ADD-ONS CARD ============ -->
+        <VBox styleClass="panel-card" maxWidth="936" spacing="18" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets top="24" right="28" bottom="24" left="28"/>
+            </padding>
+
+            <Label text="Select the extras you want. The price impact is shown for each option."
+                   styleClass="addon-intro"/>
+
+            <CheckBox fx:id="wifiCheck" styleClass="addon-check" onAction="#recalc"/>
+            <CheckBox fx:id="breakfastCheck" styleClass="addon-check" onAction="#recalc"/>
+            <CheckBox fx:id="parkingCheck" styleClass="addon-check" onAction="#recalc"/>
+            <CheckBox fx:id="spaCheck" styleClass="addon-check" onAction="#recalc"/>
+
+            <Region styleClass="thin-separator" prefHeight="1" maxHeight="1"/>
+
+            <Label fx:id="subtotalLabel" styleClass="subtotal-label"/>
+            <Label fx:id="nightsNoteLabel" styleClass="note-label"/>
+
+            <Region VBox.vgrow="ALWAYS"/>
+        </VBox>
+
+        <!-- ============ BACK / NEXT ============ -->
+        <HBox alignment="CENTER" maxWidth="936">
+            <VBox.margin>
+                <Insets top="8"/>
+            </VBox.margin>
+            <Button text="BACK" onAction="#onBack" styleClass="back-nav-button"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="NEXT: REVIEW ESTIMATE" onAction="#onNext" styleClass="next-button"/>
+        </HBox>
+    </VBox>
+</StackPane>

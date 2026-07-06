@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<StackPane fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ca.senecacollege.hotelreservation.hotelreservation.ReviewConfirmPage"
+           prefWidth="1024" prefHeight="768"
+           styleClass="root-pane" stylesheets="@kiosk.css">
+
+    <ImageView fitWidth="1024" fitHeight="768" preserveRatio="false" opacity="0.3">
+        <image>
+            <Image url="@/lobby-background.jpg"/>
+        </image>
+    </ImageView>
+
+    <Region styleClass="cream-overlay"/>
+
+    <VBox alignment="TOP_CENTER" spacing="10">
+        <padding>
+            <Insets top="20" right="36" bottom="18" left="36"/>
+        </padding>
+
+        <!-- ============ HEADER ============ -->
+        <StackPane>
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Button onAction="#onRulesClicked" styleClass="rules-button"
+                        text="RULES &amp; REGULATIONS" contentDisplay="LEFT" graphicTextGap="10">
+                    <graphic>
+                        <SVGPath content="M14,2 H6 C4.9,2 4,2.9 4,4 v16 c0,1.1 0.9,2 2,2 h12 c1.1,0 2,-0.9 2,-2 V8 L14,2 z M16,18 H8 v-2 h8 V18 z M16,14 H8 v-2 h8 V14 z M13,9 V3.5 L18.5,9 H13 z"
+                                 scaleX="0.8" scaleY="0.8" styleClass="gold-icon"/>
+                    </graphic>
+                </Button>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <VBox alignment="TOP_RIGHT">
+                    <Label fx:id="clockLabel" text="10:48 AM" styleClass="clock-label"/>
+                    <Label fx:id="dateLabel" text="Saturday, July 4" styleClass="date-label"/>
+                </VBox>
+            </HBox>
+
+            <VBox alignment="CENTER" pickOnBounds="false" mouseTransparent="true">
+                <Label text="Maplewood Grand" styleClass="header-hotel-name"/>
+                <Label text="H O T E L" styleClass="header-hotel-sub"/>
+            </VBox>
+        </StackPane>
+
+        <!-- ============ TITLE ============ -->
+        <Label text="REVIEW AND CONFIRM" styleClass="page-title"/>
+        <Label text="Step 5 of 5" styleClass="step-label"/>
+
+        <!-- ============ MAIN CARD ============ -->
+        <HBox styleClass="panel-card" maxWidth="936" spacing="26" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets top="24" right="28" bottom="24" left="28"/>
+            </padding>
+
+            <!-- LEFT: guest details -->
+            <VBox spacing="16" prefWidth="420">
+                <Label text="Guest Details" styleClass="form-heading"/>
+
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="Full name" styleClass="form-label" prefWidth="90"/>
+                    <TextField fx:id="nameField" prefWidth="270" styleClass="form-field"/>
+                    <Label text="*" styleClass="required-star"/>
+                </HBox>
+
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="Phone" styleClass="form-label" prefWidth="90"/>
+                    <TextField fx:id="phoneField" prefWidth="270" styleClass="form-field"/>
+                    <Label text="*" styleClass="required-star"/>
+                </HBox>
+
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="Email" styleClass="form-label" prefWidth="90"/>
+                    <TextField fx:id="emailField" prefWidth="270" styleClass="form-field"/>
+                </HBox>
+
+                <Label fx:id="stayInfoLabel" styleClass="note-label" wrapText="true">
+                    <VBox.margin>
+                        <Insets top="10"/>
+                    </VBox.margin>
+                </Label>
+            </VBox>
+
+            <!-- vertical divider -->
+            <Region styleClass="thin-separator" prefWidth="1" maxWidth="1"/>
+
+            <!-- RIGHT: estimate -->
+            <VBox spacing="14" HBox.hgrow="ALWAYS">
+                <Label text="Estimate" styleClass="form-heading"/>
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label fx:id="roomLineLabel" styleClass="estimate-line"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="roomAmountLabel" styleClass="estimate-amount"/>
+                </HBox>
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Add-ons" styleClass="estimate-line"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="addonsAmountLabel" styleClass="estimate-amount"/>
+                </HBox>
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Loyalty discount" styleClass="estimate-line"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="discountAmountLabel" styleClass="estimate-amount"/>
+                </HBox>
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label fx:id="taxLineLabel" styleClass="estimate-line"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="taxAmountLabel" styleClass="estimate-amount"/>
+                </HBox>
+
+                <Region styleClass="thin-separator" prefHeight="1" maxHeight="1">
+                    <VBox.margin>
+                        <Insets top="6" bottom="6"/>
+                    </VBox.margin>
+                </Region>
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Estimated total" styleClass="total-label"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="totalAmountLabel" styleClass="total-amount"/>
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <!-- ============ BACK / CONFIRM ============ -->
+        <HBox alignment="CENTER" maxWidth="936">
+            <VBox.margin>
+                <Insets top="8"/>
+            </VBox.margin>
+            <Button text="BACK" onAction="#onBack" styleClass="back-nav-button"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="CONFIRM BOOKING" onAction="#onConfirm" styleClass="next-button"/>
+        </HBox>
+    </VBox>
+</StackPane>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.media.MediaView?>
+<?import javafx.scene.shape.SVGPath?>
+
+<StackPane fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ca.senecacollege.hotelreservation.hotelreservation.WelcomePage"
+           prefWidth="1024" prefHeight="768"
+           styleClass="root-pane" stylesheets="@kiosk.css">
+
+    <!-- LAYER 1: faded lobby photo -->
+    <ImageView fx:id="bgImage" preserveRatio="false" fitWidth="1024" fitHeight="768">
+        <image>
+            <Image url="@/lobby-background.jpg"/>
+        </image>
+    </ImageView>
+
+    <!-- LAYER 2: warm cream wash over the photo -->
+    <Region styleClass="cream-overlay"/>
+
+    <!-- LAYER 3: content -->
+    <VBox alignment="TOP_CENTER" spacing="18">
+        <padding>
+            <Insets top="28" right="40" bottom="24" left="40"/>
+        </padding>
+
+        <!-- ============ HEADER ============ -->
+        <HBox alignment="CENTER_LEFT">
+            <Button fx:id="rulesButton" onAction="#onRulesClicked" styleClass="rules-button"
+                    text="RULES &amp; REGULATIONS" contentDisplay="LEFT" graphicTextGap="10">
+                <graphic>
+                    <SVGPath content="M14,2 H6 C4.9,2 4,2.9 4,4 v16 c0,1.1 0.9,2 2,2 h12 c1.1,0 2,-0.9 2,-2 V8 L14,2 z M16,18 H8 v-2 h8 V18 z M16,14 H8 v-2 h8 V14 z M13,9 V3.5 L18.5,9 H13 z"
+                             scaleX="0.8" scaleY="0.8" styleClass="gold-icon"/>
+                </graphic>
+            </Button>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <VBox alignment="TOP_RIGHT" spacing="0">
+                <Label fx:id="clockLabel" text="02:46 PM" styleClass="clock-label"/>
+                <Label fx:id="dateLabel" text="Friday, July 3" styleClass="date-label"/>
+            </VBox>
+        </HBox>
+
+        <!-- ============ TITLE BLOCK ============ -->
+        <VBox alignment="CENTER" spacing="6">
+            <VBox.margin>
+                <Insets top="6"/>
+            </VBox.margin>
+
+            <Label text="W E L C O M E   T O" styleClass="eyebrow-label"/>
+            <Label text="Maplewood Grand" styleClass="hotel-name"/>
+
+            <HBox alignment="CENTER" spacing="16" maxWidth="360">
+                <Region styleClass="gold-line" prefHeight="1" maxHeight="1" HBox.hgrow="ALWAYS"/>
+                <Label text="H O T E L" styleClass="hotel-sub"/>
+                <Region styleClass="gold-line" prefHeight="1" maxHeight="1" HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <Label text="Where every detail is crafted for your comfort." styleClass="tagline">
+                <VBox.margin>
+                    <Insets top="8"/>
+                </VBox.margin>
+            </Label>
+        </VBox>
+
+        <!-- ============ VIDEO CARD ============ -->
+        <StackPane fx:id="videoContainer" prefWidth="700" prefHeight="330"
+                   maxWidth="700" maxHeight="330" styleClass="video-card">
+            <VBox.margin>
+                <Insets top="8"/>
+            </VBox.margin>
+
+            <MediaView fx:id="mediaView"/>
+
+            <!-- big translucent play button (hidden while playing) -->
+            <StackPane fx:id="playOverlay" onMouseClicked="#togglePlayback" pickOnBounds="true">
+                <StackPane styleClass="play-circle" maxWidth="88" maxHeight="88" prefWidth="88" prefHeight="88">
+                    <SVGPath content="M0,0 L0,26 L22,13 Z" styleClass="play-triangle" translateX="3"/>
+                </StackPane>
+            </StackPane>
+
+            <!-- bottom control bar -->
+            <HBox fx:id="controlBar" StackPane.alignment="BOTTOM_CENTER"
+                  maxHeight="44" prefHeight="44" alignment="CENTER_LEFT" spacing="14"
+                  styleClass="control-bar">
+                <padding>
+                    <Insets left="16" right="16"/>
+                </padding>
+
+                <StackPane onMouseClicked="#togglePlayback" styleClass="icon-btn">
+                    <SVGPath fx:id="playPauseIcon" content="M0,0 L0,12 L10,6 Z" styleClass="white-icon"/>
+                </StackPane>
+
+                <Label fx:id="timeLabel" text="0:00 / 0:00" styleClass="time-label"/>
+
+                <Slider fx:id="progressSlider" HBox.hgrow="ALWAYS" styleClass="progress-slider"/>
+
+                <StackPane onMouseClicked="#toggleMute" styleClass="icon-btn">
+                    <SVGPath fx:id="volumeIcon" scaleX="0.85" scaleY="0.85" styleClass="white-icon"
+                             content="M3,9 v6 h4 l5,5 V4 L7,9 H3 z M16.5,12 c0,-1.77 -1.02,-3.29 -2.5,-4.03 v8.05 C15.48,15.29 16.5,13.77 16.5,12 z"/>
+                </StackPane>
+
+                <StackPane styleClass="icon-btn">
+                    <SVGPath scaleX="0.8" scaleY="0.8" styleClass="white-icon"
+                             content="M19.14,12.94 c0.04,-0.3 0.06,-0.61 0.06,-0.94 c0,-0.32 -0.02,-0.64 -0.07,-0.94 l2.03,-1.58 c0.18,-0.14 0.23,-0.41 0.12,-0.61 l-1.92,-3.32 c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22 l-2.39,0.96 c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94 L14.4,2.81 c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41 h-3.84 c-0.24,0 -0.43,0.17 -0.47,0.41 L9.25,5.35 C8.66,5.59 8.12,5.92 7.63,6.29 L5.24,5.33 c-0.22,-0.08 -0.47,0 -0.59,0.22 L2.74,8.87 C2.62,9.08 2.66,9.34 2.86,9.48 l2.03,1.58 C4.84,11.36 4.8,11.69 4.8,12 s0.02,0.64 0.07,0.94 l-2.03,1.58 c-0.18,0.14 -0.23,0.41 -0.12,0.61 l1.92,3.32 c0.12,0.22 0.37,0.29 0.59,0.22 l2.39,-0.96 c0.5,0.38 1.03,0.7 1.62,0.94 l0.36,2.54 c0.05,0.24 0.24,0.41 0.48,0.41 h3.84 c0.24,0 0.44,-0.17 0.47,-0.41 l0.36,-2.54 c0.59,-0.24 1.13,-0.56 1.62,-0.94 l2.39,0.96 c0.22,0.08 0.47,0 0.59,-0.22 l1.92,-3.32 c0.12,-0.22 0.07,-0.47 -0.12,-0.61 L19.14,12.94 z M12,15.6 c-1.98,0 -3.6,-1.62 -3.6,-3.6 s1.62,-3.6 3.6,-3.6 s3.6,1.62 3.6,3.6 S13.98,15.6 12,15.6 z"/>
+                </StackPane>
+
+                <StackPane onMouseClicked="#toggleFullscreen" styleClass="icon-btn">
+                    <SVGPath scaleX="0.85" scaleY="0.85" styleClass="white-icon"
+                             content="M7,14 H5 v5 h5 v-2 H7 v-3 z M5,10 h2 V7 h3 V5 H5 v5 z M17,17 h-3 v2 h5 v-5 h-2 v3 z M14,5 v2 h3 v3 h2 V5 h-5 z"/>
+                </StackPane>
+            </HBox>
+        </StackPane>
+
+        <!-- ============ CTA ============ -->
+        <Button fx:id="startButton" onAction="#onStartBooking" styleClass="start-button"
+                text="START NEW BOOKING" contentDisplay="RIGHT" graphicTextGap="16">
+            <VBox.margin>
+                <Insets top="10"/>
+            </VBox.margin>
+            <graphic>
+                <SVGPath content="M2,2 L10,10 L2,18" styleClass="chevron-icon"/>
+            </graphic>
+        </Button>
+
+        <Label text="TOUCH TO BEGIN  •  24/7 SELF-SERVICE" styleClass="footer-label"/>
+    </VBox>
+</StackPane>
