@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ca.senecacollege.hotelreservation.hotelreservation.AdminWaitlistPage"
+           prefWidth="1024" prefHeight="768"
+           styleClass="root-pane" stylesheets="@kiosk.css">
+
+    <ImageView fitWidth="1024" fitHeight="768" preserveRatio="false" opacity="0.12">
+        <image>
+            <Image url="@/lobby-background.jpg"/>
+        </image>
+    </ImageView>
+
+    <Region styleClass="cream-overlay"/>
+
+    <VBox spacing="12">
+        <padding>
+            <Insets top="20" right="30" bottom="18" left="30"/>
+        </padding>
+
+        <HBox alignment="CENTER_LEFT" spacing="12">
+            <VBox spacing="2">
+                <Label text="Waitlist" styleClass="dashboard-title"/>
+                <Label text="G U E S T S   W A I T I N G   F O R   A V A I L A B I L I T Y" styleClass="portal-sub"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <VBox alignment="CENTER_RIGHT" spacing="4">
+                <Label fx:id="loggedInLabel" styleClass="note-label"/>
+                <HBox spacing="8" alignment="CENTER_RIGHT">
+                    <Button text="Back to Dashboard" onAction="#onBack" styleClass="back-nav-button-small"/>
+                    <Button fx:id="addToggleButton" text="+ Add to Waitlist" onAction="#toggleAddForm" styleClass="save-button"/>
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <Label text="Subscribed staff are notified automatically (Observer pattern) when a checkout frees a room."
+               styleClass="note-label"/>
+
+        <VBox fx:id="addForm" styleClass="panel-card" spacing="10" visible="false" managed="false">
+            <padding>
+                <Insets top="14" right="18" bottom="14" left="18"/>
+            </padding>
+            <Label text="N E W   W A I T L I S T   E N T R Y" styleClass="section-label"/>
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <TextField fx:id="guestField" promptText="Guest name" prefWidth="200" styleClass="form-field"/>
+                <ComboBox fx:id="roomTypeCombo" prefWidth="130"/>
+                <ComboBox fx:id="qtyCombo" prefWidth="80"/>
+                <DatePicker fx:id="fromPicker" promptText="From" prefWidth="145" editable="false"/>
+                <DatePicker fx:id="toPicker" promptText="To" prefWidth="145" editable="false"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Add" onAction="#onAddEntry" styleClass="save-button"/>
+            </HBox>
+        </VBox>
+
+        <TableView fx:id="table" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="guestCol" text="Guest" prefWidth="200"/>
+                <TableColumn fx:id="roomCol" text="Room type" prefWidth="160"/>
+                <TableColumn fx:id="datesCol" text="Desired dates" prefWidth="190"/>
+                <TableColumn fx:id="requestedCol" text="Requested" prefWidth="140"/>
+                <TableColumn fx:id="statusCol" text="Status" prefWidth="180"/>
+            </columns>
+        </TableView>
+
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Button text="Convert to Reservation" onAction="#onConvert" styleClass="next-button"/>
+            <Button text="Notify Guest" onAction="#onNotify" styleClass="back-nav-button-small"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="Select a row, then convert or notify."
+                   styleClass="note-label"/>
+        </HBox>
+    </VBox>
+</StackPane>

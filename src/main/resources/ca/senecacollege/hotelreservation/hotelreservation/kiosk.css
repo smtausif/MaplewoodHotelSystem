@@ -796,3 +796,26 @@
     -fx-text-fill: #b0413e;
     -fx-font-weight: bold;
 }
+
+/* ============ Admin: Waitlist ============ */
+
+.status-free {
+    -fx-text-fill: #2e7d32;
+    -fx-font-weight: bold;
+}
+
+.status-waiting {
+    -fx-text-fill: #8a6d1a;
+}
+
+.status-notified {
+    -fx-text-fill: #14213d;
+    -fx-font-weight: bold;
+}
+
+/* ============ Admin: Feedback ============ */
+
+.rating-cell {
+    -fx-text-fill: #c5a059;
+    -fx-font-weight: bold;
+}

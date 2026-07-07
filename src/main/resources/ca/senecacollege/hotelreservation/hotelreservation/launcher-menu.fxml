@@ -28,7 +28,6 @@
             <Insets top="48" right="60" bottom="40" left="60"/>
         </padding>
 
-        <!-- title -->
         <VBox alignment="CENTER" spacing="6">
             <Label text="Maplewood Grand" styleClass="menu-title"/>
             <Label text="H O T E L   R E S E R V A T I O N   S Y S T E M" styleClass="hotel-sub"/>
@@ -40,7 +39,6 @@
             </Label>
         </VBox>
 
-        <!-- kiosk section -->
         <VBox spacing="14" alignment="TOP_CENTER">
             <Label text="K I O S K   ·   S E L F - S E R V I C E" styleClass="section-label"/>
             <GridPane hgap="18" vgap="14" alignment="CENTER">
@@ -65,7 +63,6 @@
             </GridPane>
         </VBox>
 
-        <!-- admin section -->
         <VBox spacing="14" alignment="TOP_CENTER">
             <Label text="A D M I N   ·   F R O N T   D E S K" styleClass="section-label"/>
             <GridPane hgap="18" vgap="14" alignment="CENTER">
@@ -77,13 +74,13 @@
                         GridPane.columnIndex="2" GridPane.rowIndex="0"/>
                 <Button text="Payment &amp; Checkout" onAction="#openPayment" styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                <Button text="Waitlist" onAction="#notBuilt" styleClass="menu-btn" prefWidth="280"
+                <Button text="Waitlist" onAction="#openWaitlist" styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                <Button text="Feedback" onAction="#notBuilt" styleClass="menu-btn" prefWidth="280"
+                <Button text="Feedback" onAction="#openFeedback" styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                <Button text="Reports" onAction="#notBuilt" styleClass="menu-btn" prefWidth="280"
+                <Button text="Reports" onAction="#openReports" styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                <Button text="Loyalty" onAction="#notBuilt" styleClass="menu-btn" prefWidth="280"
+                <Button text="Loyalty" onAction="#openLoyalty" styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="1" GridPane.rowIndex="2"/>
             </GridPane>
         </VBox>

@@ -61,6 +61,26 @@ public class LauncherMenu {
     }
 
     @FXML
+    private void openWaitlist(ActionEvent event) {
+        SceneNavigator.go((Node) event.getSource(), "admin-waitlist.fxml");
+    }
+
+    @FXML
+    private void openFeedback(ActionEvent event) {
+        SceneNavigator.go((Node) event.getSource(), "admin-feedback.fxml");
+    }
+
+    @FXML
+    private void openReports(ActionEvent event) {
+        SceneNavigator.go((Node) event.getSource(), "admin-reports.fxml");
+    }
+
+    @FXML
+    private void openLoyalty(ActionEvent event) {
+        SceneNavigator.go((Node) event.getSource(), "admin-loyalty.fxml");
+    }
+
+    @FXML
     private void notBuilt(ActionEvent event) {
         String screen = ((Button) event.getSource()).getText();
         Alert alert = new Alert(Alert.AlertType.INFORMATION);

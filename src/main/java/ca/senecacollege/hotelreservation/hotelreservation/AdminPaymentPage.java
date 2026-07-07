@@ -173,11 +173,14 @@ public class AdminPaymentPage implements Initializable {
         ReservationStore.replace(reservation, updated);
         ReservationStore.selected = updated;
 
+        // Observer pattern: publish that this room type was freed — the waitlist reacts
+        WaitlistStore.roomFreed(reservation.roomType);
+
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Maplewood Grand — Admin");
         alert.setHeaderText("Checked out — " + reservation.resNo);
         alert.setContentText("Final bill generated for " + reservation.guest + ".\n"
-                + reservation.roomsText() + " freed and availability updated.\n"
+                + reservation.roomsText() + " freed — waitlist updated and availability notified.\n"
                 + "(Simulated for Milestone 1.)");
         alert.showAndWait();
 

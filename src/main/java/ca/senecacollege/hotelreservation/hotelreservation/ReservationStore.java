@@ -66,6 +66,23 @@ public final class ReservationStore {
         }
     }
 
+    /** Add a brand-new reservation to the top of the list. */
+    public static void add(Reservation r) {
+        ALL.add(0, r);
+    }
+
+    /** Next reservation number, e.g. "MPL-4472". */
+    public static String nextResNo() {
+        int max = 0;
+        for (Reservation r : ALL) {
+            try {
+                max = Math.max(max, Integer.parseInt(r.resNo.replace("MPL-", "")));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return "MPL-" + (max + 1);
+    }
+
     private static void buildSampleData() {
         // the six rows from the design mock
         ALL.add(new Reservation("MPL-4471", "Amara Okafor", "(905) 555-0147",

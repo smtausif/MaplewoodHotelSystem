@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ca.senecacollege.hotelreservation.hotelreservation.AdminFeedbackPage"
+           prefWidth="1024" prefHeight="768"
+           styleClass="root-pane" stylesheets="@kiosk.css">
+
+    <ImageView fitWidth="1024" fitHeight="768" preserveRatio="false" opacity="0.12">
+        <image>
+            <Image url="@/lobby-background.jpg"/>
+        </image>
+    </ImageView>
+
+    <Region styleClass="cream-overlay"/>
+
+    <VBox spacing="12">
+        <padding>
+            <Insets top="20" right="30" bottom="18" left="30"/>
+        </padding>
+
+        <HBox alignment="CENTER_LEFT" spacing="12">
+            <VBox spacing="2">
+                <Label text="Guest Feedback" styleClass="dashboard-title"/>
+                <Label text="W H A T   O U R   G U E S T S   A R E   S A Y I N G" styleClass="portal-sub"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <VBox alignment="CENTER_RIGHT" spacing="4">
+                <Label fx:id="loggedInLabel" styleClass="note-label"/>
+                <HBox spacing="8" alignment="CENTER_RIGHT">
+                    <Button text="Back to Dashboard" onAction="#onBack" styleClass="back-nav-button-small"/>
+                    <Button text="Export CSV" onAction="#onExportCsv" styleClass="save-button"/>
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label text="Filters:" styleClass="filter-label"/>
+            <ComboBox fx:id="ratingCombo" prefWidth="120"/>
+            <ComboBox fx:id="sentimentCombo" prefWidth="140"/>
+            <ComboBox fx:id="guestCombo" prefWidth="180"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <VBox fx:id="avgChip" styleClass="stat-chip" alignment="CENTER" prefWidth="190">
+                <Label text="AVERAGE RATING" styleClass="stat-title"/>
+                <Label fx:id="avgValue" styleClass="stat-value"/>
+            </VBox>
+        </HBox>
+
+        <Label text="Feedback is only visible after the guest has checked out."
+               styleClass="note-label"/>
+
+        <TableView fx:id="table" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="resCol" text="Res #" prefWidth="100"/>
+                <TableColumn fx:id="guestCol" text="Guest" prefWidth="150"/>
+                <TableColumn fx:id="ratingCol" text="Rating" prefWidth="140"/>
+                <TableColumn fx:id="commentCol" text="Comment" prefWidth="320"/>
+                <TableColumn fx:id="sentimentCol" text="Sentiment" prefWidth="120"/>
+                <TableColumn fx:id="dateCol" text="Date" prefWidth="100"/>
+            </columns>
+        </TableView>
+    </VBox>
+</StackPane>
