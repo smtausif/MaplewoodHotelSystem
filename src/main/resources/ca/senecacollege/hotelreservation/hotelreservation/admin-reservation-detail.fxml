@@ -67,6 +67,7 @@
                 <TableColumn fx:id="guestsCol" text="Guests" prefWidth="130"/>
                 <TableColumn fx:id="rateCol" text="Rate / night" prefWidth="160"/>
                 <TableColumn fx:id="nightsCol" text="Nights" prefWidth="120"/>
+                <TableColumn fx:id="actionsCol" text="Actions" prefWidth="110"/>
             </columns>
         </TableView>
 
@@ -89,6 +90,32 @@
                 <Label fx:id="balanceValue" styleClass="balance-label"/>
             </HBox>
         </VBox>
+
+        <!-- ============ LOYALTY MEMBER ============ -->
+        <HBox fx:id="loyaltyBox" styleClass="res-banner" alignment="CENTER_LEFT" spacing="18"
+              managed="false" visible="false">
+            <padding>
+                <Insets top="12" right="18" bottom="12" left="18"/>
+            </padding>
+            <Label text="Loyalty Member" styleClass="banner-text"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <VBox alignment="CENTER">
+                <Label text="MEMBER ID" styleClass="stat-title"/>
+                <Label fx:id="loyaltyMemberIdValue" styleClass="stat-value"/>
+            </VBox>
+            <VBox alignment="CENTER">
+                <Label text="AVAILABLE POINTS" styleClass="stat-title"/>
+                <Label fx:id="loyaltyPointsValue" styleClass="stat-value"/>
+            </VBox>
+            <VBox alignment="CENTER">
+                <Label text="REDEEMED THIS BOOKING" styleClass="stat-title"/>
+                <Label fx:id="loyaltyRedeemedValue" styleClass="stat-value"/>
+            </VBox>
+            <VBox alignment="CENTER">
+                <Label text="POINTS AFTER STAY" styleClass="stat-title"/>
+                <Label fx:id="loyaltyEarnValue" styleClass="stat-value"/>
+            </VBox>
+        </HBox>
 
         <!-- ============ ACTIONS ============ -->
         <HBox spacing="10">

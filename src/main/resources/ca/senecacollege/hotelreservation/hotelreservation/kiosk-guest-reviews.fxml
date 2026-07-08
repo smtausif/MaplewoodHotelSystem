@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<StackPane fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ca.senecacollege.hotelreservation.hotelreservation.GuestReviewsPage"
+           prefWidth="1024" prefHeight="768"
+           styleClass="root-pane" stylesheets="@kiosk.css">
+
+    <ImageView fitWidth="1024" fitHeight="768" preserveRatio="false" opacity="0.3">
+        <image>
+            <Image url="@/lobby-background.jpg"/>
+        </image>
+    </ImageView>
+
+    <Region styleClass="cream-overlay"/>
+
+    <VBox alignment="TOP_CENTER" spacing="12">
+        <padding>
+            <Insets top="20" right="36" bottom="18" left="36"/>
+        </padding>
+
+        <!-- ============ HEADER ============ -->
+        <StackPane>
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Button onAction="#onBack" styleClass="rules-button"
+                        text="BACK" contentDisplay="LEFT" graphicTextGap="8">
+                    <graphic>
+                        <SVGPath content="M20,11 H7.83 l5.59,-5.59 L12,4 l-8,8 8,8 1.41,-1.41 L7.83,13 H20 V11 z"
+                                 scaleX="0.75" scaleY="0.75" styleClass="gold-icon"/>
+                    </graphic>
+                </Button>
+
+                <Button onAction="#onRulesClicked" styleClass="rules-button"
+                        text="RULES &amp; REGULATIONS" contentDisplay="LEFT" graphicTextGap="10">
+                    <graphic>
+                        <SVGPath content="M14,2 H6 C4.9,2 4,2.9 4,4 v16 c0,1.1 0.9,2 2,2 h12 c1.1,0 2,-0.9 2,-2 V8 L14,2 z M16,18 H8 v-2 h8 V18 z M16,14 H8 v-2 h8 V14 z M13,9 V3.5 L18.5,9 H13 z"
+                                 scaleX="0.8" scaleY="0.8" styleClass="gold-icon"/>
+                    </graphic>
+                </Button>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <VBox alignment="TOP_RIGHT">
+                    <Label fx:id="clockLabel" text="10:48 AM" styleClass="clock-label"/>
+                    <Label fx:id="dateLabel" text="Saturday, July 4" styleClass="date-label"/>
+                </VBox>
+            </HBox>
+
+            <VBox alignment="CENTER" pickOnBounds="false" mouseTransparent="true">
+                <Label text="Maplewood Grand" styleClass="header-hotel-name"/>
+                <Label text="H O T E L" styleClass="header-hotel-sub"/>
+            </VBox>
+        </StackPane>
+
+        <!-- ============ TITLE ============ -->
+        <Label text="GUEST REVIEWS" styleClass="page-title"/>
+
+        <!-- ============ OVERALL RATING ============ -->
+        <HBox alignment="CENTER" spacing="16">
+            <Label text="★★★★★" styleClass="rating-stars"/>
+            <Label text="4.8 / 5" styleClass="rating-score"/>
+            <Label fx:id="reviewCountLabel" styleClass="review-count-label"/>
+        </HBox>
+
+        <!-- ============ REVIEW LIST ============ -->
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="clear-scroll"
+                    maxWidth="936" VBox.vgrow="ALWAYS">
+            <VBox.margin>
+                <Insets top="4"/>
+            </VBox.margin>
+            <VBox fx:id="reviewList" spacing="14">
+                <padding>
+                    <Insets top="4" right="4" bottom="4" left="4"/>
+                </padding>
+            </VBox>
+        </ScrollPane>
+
+        <!-- ============ BACK / LEAVE A REVIEW ============ -->
+        <HBox alignment="CENTER" maxWidth="936">
+            <VBox.margin>
+                <Insets top="6"/>
+            </VBox.margin>
+            <Button text="BACK" onAction="#onBack" styleClass="back-nav-button"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="LEAVE A REVIEW" onAction="#onLeaveReview" styleClass="next-button"/>
+        </HBox>
+    </VBox>
+</StackPane>

@@ -167,7 +167,17 @@ public class AdminDashboardPage implements Initializable {
     private void onNewReservation() {
         // Start a fresh booking in the kiosk flow
         BookingSession.reset();
-        SceneNavigator.go(table, "kiosk-guests-dates.fxml");
+        SceneNavigator.go(table, "kiosk-guests.fxml");
+    }
+
+    @FXML
+    private void onOpenWaitlist() {
+        SceneNavigator.go(table, "admin-waitlist.fxml");
+    }
+
+    @FXML
+    private void onOpenReports() {
+        SceneNavigator.go(table, "admin-reports.fxml");
     }
 
     @FXML

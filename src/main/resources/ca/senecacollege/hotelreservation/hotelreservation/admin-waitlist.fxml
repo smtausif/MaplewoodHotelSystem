@@ -57,11 +57,13 @@
             </padding>
             <Label text="N E W   W A I T L I S T   E N T R Y" styleClass="section-label"/>
             <HBox alignment="CENTER_LEFT" spacing="10">
-                <TextField fx:id="guestField" promptText="Guest name" prefWidth="200" styleClass="form-field"/>
-                <ComboBox fx:id="roomTypeCombo" prefWidth="130"/>
-                <ComboBox fx:id="qtyCombo" prefWidth="80"/>
-                <DatePicker fx:id="fromPicker" promptText="From" prefWidth="145" editable="false"/>
-                <DatePicker fx:id="toPicker" promptText="To" prefWidth="145" editable="false"/>
+                <TextField fx:id="guestField" promptText="Guest name" prefWidth="180" styleClass="form-field"/>
+                <ComboBox fx:id="roomTypeCombo" prefWidth="120"/>
+                <ComboBox fx:id="qtyCombo" prefWidth="70"/>
+                <DatePicker fx:id="fromPicker" promptText="From" prefWidth="130" editable="false"/>
+                <DatePicker fx:id="toPicker" promptText="To" prefWidth="130" editable="false"/>
+                <TextField fx:id="preferredRoomField" promptText="Room # (optional)" prefWidth="140"
+                           styleClass="form-field"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Button text="Add" onAction="#onAddEntry" styleClass="save-button"/>
             </HBox>
@@ -69,11 +71,12 @@
 
         <TableView fx:id="table" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="guestCol" text="Guest" prefWidth="200"/>
-                <TableColumn fx:id="roomCol" text="Room type" prefWidth="160"/>
-                <TableColumn fx:id="datesCol" text="Desired dates" prefWidth="190"/>
-                <TableColumn fx:id="requestedCol" text="Requested" prefWidth="140"/>
-                <TableColumn fx:id="statusCol" text="Status" prefWidth="180"/>
+                <TableColumn fx:id="guestCol" text="Guest" prefWidth="180"/>
+                <TableColumn fx:id="roomCol" text="Room type" prefWidth="140"/>
+                <TableColumn fx:id="preferredCol" text="Preferred Room" prefWidth="130"/>
+                <TableColumn fx:id="datesCol" text="Desired dates" prefWidth="180"/>
+                <TableColumn fx:id="requestedCol" text="Requested" prefWidth="130"/>
+                <TableColumn fx:id="statusCol" text="Status" prefWidth="160"/>
             </columns>
         </TableView>
 

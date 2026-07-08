@@ -5,6 +5,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
@@ -38,6 +39,7 @@ public class WelcomePage implements Initializable {
     @FXML private Slider progressSlider;
     @FXML private SVGPath playPauseIcon;
     @FXML private SVGPath volumeIcon;
+    @FXML private Button adminLoginButton;
 
     private MediaPlayer mediaPlayer;
 
@@ -183,13 +185,29 @@ public class WelcomePage implements Initializable {
         if (mediaPlayer != null) {
             mediaPlayer.pause(); // don't let the video keep playing in the background
         }
-        SceneNavigator.go(videoContainer, "kiosk-guests-dates.fxml");
+        SceneNavigator.go(videoContainer, "kiosk-guests.fxml");
+    }
+
+    @FXML
+    private void onAdminLoginClicked() {
+        if (mediaPlayer != null) {
+            mediaPlayer.pause(); // don't let the video keep playing in the background
+        }
+        SceneNavigator.go(adminLoginButton, "admin-login.fxml");
     }
 
     @FXML
     private void onRulesClicked() {
         // TODO: show the rules & regulations screen/dialog
         System.out.println("Rules & regulations");
+    }
+
+    @FXML
+    private void onGuestReviewsClicked() {
+        if (mediaPlayer != null) {
+            mediaPlayer.pause(); // don't let the video keep playing in the background
+        }
+        SceneNavigator.go(videoContainer, "kiosk-guest-reviews.fxml");
     }
 
     private void updateTimeLabel(Duration current) {

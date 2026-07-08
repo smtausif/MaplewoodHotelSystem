@@ -78,6 +78,8 @@
                 <TextField fx:id="amountField" prefWidth="140" promptText="0.00"
                            styleClass="form-field" onAction="#onRecordPayment"/>
                 <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="redeemPointsButton" text="Redeem Points" onAction="#onRedeemPoints"
+                        styleClass="back-nav-button-small" disable="true"/>
                 <Button text="Record Payment" onAction="#onRecordPayment" styleClass="save-button"/>
             </HBox>
         </VBox>
@@ -107,6 +109,14 @@
             <VBox fx:id="balanceChip" styleClass="stat-chip" alignment="CENTER" prefWidth="200">
                 <Label text="BALANCE DUE" styleClass="stat-title"/>
                 <Label fx:id="balanceValue" styleClass="stat-value"/>
+            </VBox>
+            <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="160">
+                <Label text="LOYALTY DISCOUNT" styleClass="stat-title"/>
+                <Label fx:id="loyaltyDiscountValue" styleClass="stat-value"/>
+            </VBox>
+            <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="140">
+                <Label text="REDEEMED" styleClass="stat-title"/>
+                <Label fx:id="loyaltyRedeemedValue" styleClass="stat-value"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="Generate Final Bill &amp; Check Out" onAction="#onCheckout" styleClass="next-button"/>

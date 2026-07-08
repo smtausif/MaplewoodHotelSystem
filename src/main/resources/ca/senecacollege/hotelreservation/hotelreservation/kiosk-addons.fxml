@@ -25,9 +25,9 @@
 
     <Region styleClass="cream-overlay"/>
 
-    <VBox alignment="TOP_CENTER" spacing="12">
+    <VBox alignment="TOP_CENTER" spacing="10">
         <padding>
-            <Insets top="20" right="36" bottom="18" left="36"/>
+            <Insets top="18" right="36" bottom="16" left="36"/>
         </padding>
 
         <!-- ============ HEADER ============ -->
@@ -57,20 +57,41 @@
 
         <!-- ============ TITLE ============ -->
         <Label text="SELECT YOUR ADD-ONS" styleClass="page-title"/>
+        <Label text="Step 5 of 6 — prices are calculated from your guests, rooms, and nights" styleClass="step-label"/>
 
         <!-- ============ ADD-ONS CARD ============ -->
-        <VBox styleClass="panel-card" maxWidth="936" spacing="18" VBox.vgrow="ALWAYS">
+        <VBox styleClass="panel-card" maxWidth="936" spacing="14" VBox.vgrow="ALWAYS">
             <padding>
-                <Insets top="24" right="28" bottom="24" left="28"/>
+                <Insets top="20" right="28" bottom="20" left="28"/>
             </padding>
 
-            <Label text="Select the extras you want. The price impact is shown for each option."
+            <Label text="Select the extras you want. Each price is calculated automatically from your booking."
                    styleClass="addon-intro"/>
 
-            <CheckBox fx:id="wifiCheck" styleClass="addon-check" onAction="#recalc"/>
-            <CheckBox fx:id="breakfastCheck" styleClass="addon-check" onAction="#recalc"/>
-            <CheckBox fx:id="parkingCheck" styleClass="addon-check" onAction="#recalc"/>
-            <CheckBox fx:id="spaCheck" styleClass="addon-check" onAction="#recalc"/>
+            <VBox spacing="4">
+                <CheckBox fx:id="breakfastCheck" styleClass="addon-check" onAction="#recalc"/>
+                <Label fx:id="breakfastBreakdownLabel" styleClass="row-sublabel"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <CheckBox fx:id="wifiCheck" styleClass="addon-check" onAction="#recalc"/>
+                <Label fx:id="wifiBreakdownLabel" styleClass="row-sublabel"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <CheckBox fx:id="parkingCheck" styleClass="addon-check" onAction="#recalc"/>
+                <Label fx:id="parkingBreakdownLabel" styleClass="row-sublabel"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Label fx:id="spaTitleLabel" styleClass="form-label" HBox.hgrow="ALWAYS" wrapText="true"/>
+                    <Button text="−" onAction="#spaMinus" styleClass="stepper-btn"/>
+                    <Label fx:id="spaCountLabel" text="0" styleClass="count-label"/>
+                    <Button text="+" onAction="#spaPlus" styleClass="stepper-btn"/>
+                </HBox>
+                <Label fx:id="spaBreakdownLabel" styleClass="row-sublabel"/>
+            </VBox>
 
             <Region styleClass="thin-separator" prefHeight="1" maxHeight="1"/>
 
@@ -82,9 +103,6 @@
 
         <!-- ============ BACK / NEXT ============ -->
         <HBox alignment="CENTER" maxWidth="936">
-            <VBox.margin>
-                <Insets top="8"/>
-            </VBox.margin>
             <Button text="BACK" onAction="#onBack" styleClass="back-nav-button"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="NEXT: REVIEW ESTIMATE" onAction="#onNext" styleClass="next-button"/>

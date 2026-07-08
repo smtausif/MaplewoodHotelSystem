@@ -21,21 +21,31 @@ import java.util.ResourceBundle;
 public class AdminLoyaltyPage implements Initializable {
 
     @FXML private Label loggedInLabel;
-    @FXML private Label memberLabel;
+
+    // Member Information
+    @FXML private Label memberNameValue;
+    @FXML private Label memberIdValue;
+    @FXML private Label memberTierValue;
+    @FXML private Label memberPointsValue;
+
+    // Rewards Summary
     @FXML private Label balanceValue;
     @FXML private Label earnedValue;
     @FXML private Label redeemedValue;
-    @FXML private Label rateValue;
+
+    // Program rates
+    @FXML private Label redemptionRateValue;
+    @FXML private Label earnRateValue;
 
     @FXML private TableView<LoyaltyStore.Txn> table;
-    @FXML private TableColumn<LoyaltyStore.Txn, String> dateCol;
-    @FXML private TableColumn<LoyaltyStore.Txn, String> typeCol;
     @FXML private TableColumn<LoyaltyStore.Txn, String> resCol;
+    @FXML private TableColumn<LoyaltyStore.Txn, String> typeCol;
     @FXML private TableColumn<LoyaltyStore.Txn, String> pointsCol;
-    @FXML private TableColumn<LoyaltyStore.Txn, String> valueCol;
-    @FXML private TableColumn<LoyaltyStore.Txn, String> byCol;
+    @FXML private TableColumn<LoyaltyStore.Txn, String> dateCol;
 
-    private static final DateTimeFormatter DAY_FMT = DateTimeFormatter.ofPattern("dd MMM", Locale.ENGLISH);
+    private LoyaltyMember member;
+
+    private static final DateTimeFormatter DAY_FMT = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -43,20 +53,18 @@ public class AdminLoyaltyPage implements Initializable {
                 ? "Logged in as " + AdminSession.username + " (" + AdminSession.role + ")"
                 : "Not logged in (demo mode)");
 
-        memberLabel.setText("Member:  " + LoyaltyStore.memberName + "   (" + LoyaltyStore.memberNo + ")");
+        member = LoyaltyStore.memberById(LoyaltyStore.currentMemberId)
+                .orElseGet(() -> LoyaltyStore.allMembers().get(0));
 
-        dateCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().date.format(DAY_FMT)));
-        typeCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().type));
         resCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().resNo));
-        byCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().by));
-
+        typeCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().type));
+        dateCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().date.format(DAY_FMT)));
         pointsCol.setCellValueFactory(d -> new SimpleStringProperty(
                 (d.getValue().points >= 0 ? "+" : "") + String.format("%,d", d.getValue().points)));
-        valueCol.setCellValueFactory(d -> new SimpleStringProperty(money(d.getValue().value)));
-
-        // color earn green, redeem red
         pointsCol.setCellFactory(col -> colorCell());
-        valueCol.setCellFactory(col -> colorCell());
+
+        redemptionRateValue.setText(LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED + " points = $1 CAD");
+        earnRateValue.setText("$1 spent = " + LoyaltyStore.EARN_RATE_PER_DOLLAR + " point");
 
         refresh();
     }
@@ -76,20 +84,23 @@ public class AdminLoyaltyPage implements Initializable {
     }
 
     private void refresh() {
-        table.setItems(FXCollections.observableArrayList(LoyaltyStore.history()));
-        balanceValue.setText(String.format("%,d", LoyaltyStore.balance()));
-        earnedValue.setText(String.format("%,d", LoyaltyStore.lifetimeEarned()));
-        int redeemed = LoyaltyStore.lifetimeRedeemed();
-        redeemedValue.setText(String.format("%,d", redeemed)
-                + "  (=" + money(redeemed * LoyaltyStore.POINT_VALUE) + ")");
-        rateValue.setText(LoyaltyStore.EARN_RATE + " pt / $1  (100 = $10)");
+        memberNameValue.setText(member.name());
+        memberIdValue.setText(member.memberId());
+        memberTierValue.setText(member.tier());
+        memberPointsValue.setText(String.format("%,d", LoyaltyStore.balanceOf(member.memberId())));
+
+        balanceValue.setText(String.format("%,d", LoyaltyStore.balanceOf(member.memberId())));
+        earnedValue.setText(String.format("%,d", LoyaltyStore.lifetimeEarnedOf(member.memberId())));
+        redeemedValue.setText(String.format("%,d", LoyaltyStore.lifetimeRedeemedOf(member.memberId())));
+
+        table.setItems(FXCollections.observableArrayList(LoyaltyStore.history(member.memberId())));
     }
 
     /* ---------- redeem ---------- */
 
     @FXML
     private void onRedeem() {
-        int balance = LoyaltyStore.balance();
+        int balance = LoyaltyStore.balanceOf(member.memberId());
         if (balance <= 0) {
             warn("No points", "This member has no points available to redeem.");
             return;
@@ -97,7 +108,7 @@ public class AdminLoyaltyPage implements Initializable {
 
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Maplewood Grand — Loyalty");
-        dialog.setHeaderText("Redeem points for " + LoyaltyStore.memberName);
+        dialog.setHeaderText("Redeem points for " + member.name());
         dialog.setContentText("Points to redeem (balance " + String.format("%,d", balance)
                 + ", cap " + String.format("%,d", LoyaltyStore.REDEEM_CAP_PER_RES) + " per reservation):");
 
@@ -119,7 +130,7 @@ public class AdminLoyaltyPage implements Initializable {
             return;
         }
         if (points > balance) {
-            warn("Not enough points", "The member only has " + String.format("%,d", balance) + " points.");
+            warn("Not enough points", "This member only has " + String.format("%,d", balance) + " points.");
             return;
         }
         if (points > LoyaltyStore.REDEEM_CAP_PER_RES) {
@@ -138,15 +149,15 @@ public class AdminLoyaltyPage implements Initializable {
             }
         }
 
-        LoyaltyStore.redeem(points, "MPL-4471", staffName());
+        LoyaltyStore.redeem(member.memberId(), points, "MPL-PHONE", staffName());
         refresh();
 
         Alert done = new Alert(Alert.AlertType.INFORMATION);
         done.setTitle("Maplewood Grand — Loyalty");
         done.setHeaderText("Points redeemed");
         done.setContentText(String.format("%,d", points) + " points redeemed for "
-                + money(points * LoyaltyStore.POINT_VALUE) + " off.\nNew balance: "
-                + String.format("%,d", LoyaltyStore.balance()) + " points.");
+                + money(points / (double) LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED) + " off.\nNew balance: "
+                + String.format("%,d", LoyaltyStore.balanceOf(member.memberId())) + " points.");
         done.showAndWait();
     }
 

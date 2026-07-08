@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<StackPane fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ca.senecacollege.hotelreservation.hotelreservation.DatesPage"
+           prefWidth="1024" prefHeight="768"
+           styleClass="root-pane" stylesheets="@kiosk.css">
+
+    <ImageView fx:id="bgImage" fitWidth="1024" fitHeight="768" preserveRatio="false" opacity="0.3">
+        <image>
+            <Image url="@/lobby-background.jpg"/>
+        </image>
+    </ImageView>
+
+    <Region styleClass="cream-overlay"/>
+
+    <VBox alignment="TOP_CENTER" spacing="16">
+        <padding>
+            <Insets top="24" right="40" bottom="20" left="40"/>
+        </padding>
+
+        <!-- ============ HEADER ============ -->
+        <StackPane>
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Button onAction="#onBack" styleClass="rules-button"
+                        text="BACK" contentDisplay="LEFT" graphicTextGap="8">
+                    <graphic>
+                        <SVGPath content="M20,11 H7.83 l5.59,-5.59 L12,4 l-8,8 8,8 1.41,-1.41 L7.83,13 H20 V11 z"
+                                 scaleX="0.75" scaleY="0.75" styleClass="gold-icon"/>
+                    </graphic>
+                </Button>
+
+                <Button onAction="#onRulesClicked" styleClass="rules-button"
+                        text="RULES &amp; REGULATIONS" contentDisplay="LEFT" graphicTextGap="10">
+                    <graphic>
+                        <SVGPath content="M14,2 H6 C4.9,2 4,2.9 4,4 v16 c0,1.1 0.9,2 2,2 h12 c1.1,0 2,-0.9 2,-2 V8 L14,2 z M16,18 H8 v-2 h8 V18 z M16,14 H8 v-2 h8 V14 z M13,9 V3.5 L18.5,9 H13 z"
+                                 scaleX="0.8" scaleY="0.8" styleClass="gold-icon"/>
+                    </graphic>
+                </Button>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <VBox alignment="TOP_RIGHT">
+                    <Label fx:id="clockLabel" text="10:44 AM" styleClass="clock-label"/>
+                    <Label fx:id="dateLabel" text="Saturday, July 4" styleClass="date-label"/>
+                </VBox>
+            </HBox>
+
+            <VBox alignment="CENTER" pickOnBounds="false" mouseTransparent="true">
+                <Label text="Maplewood Grand" styleClass="header-hotel-name"/>
+                <Label text="H O T E L" styleClass="header-hotel-sub"/>
+            </VBox>
+        </StackPane>
+
+        <!-- ============ TITLE ============ -->
+        <Label text="WHEN ARE YOU STAYING?" styleClass="page-title">
+            <VBox.margin>
+                <Insets top="10"/>
+            </VBox.margin>
+        </Label>
+        <Label text="Step 3 of 6" styleClass="step-label"/>
+
+        <!-- ============ DATES CARD ============ -->
+        <VBox styleClass="panel-card" prefWidth="440" maxWidth="440" spacing="14">
+            <VBox.margin>
+                <Insets top="10"/>
+            </VBox.margin>
+            <padding>
+                <Insets top="18" right="18" bottom="18" left="18"/>
+            </padding>
+
+            <Label text="D A T E S" styleClass="card-title" maxWidth="Infinity" alignment="CENTER"/>
+
+            <HBox styleClass="stepper-row" alignment="CENTER_LEFT" spacing="14">
+                <SVGPath content="M17,12 h-5 v5 h5 V12 z M16,1 v2 H8 V1 H6 v2 H5 c-1.11,0 -1.99,0.9 -1.99,2 L3,19 c0,1.1 0.89,2 2,2 h14 c1.1,0 2,-0.9 2,-2 V5 c0,-1.1 -0.9,-2 -2,-2 h-1 V1 h-2 z M19,19 H5 V8 h14 V19 z"
+                         scaleX="1.2" scaleY="1.2" styleClass="navy-icon"/>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Check-in" styleClass="row-sublabel"/>
+                    <DatePicker fx:id="checkInPicker" promptText="Select Date"
+                                editable="false" maxWidth="Infinity"/>
+                </VBox>
+            </HBox>
+
+            <HBox styleClass="stepper-row" alignment="CENTER_LEFT" spacing="14">
+                <SVGPath content="M17,12 h-5 v5 h5 V12 z M16,1 v2 H8 V1 H6 v2 H5 c-1.11,0 -1.99,0.9 -1.99,2 L3,19 c0,1.1 0.89,2 2,2 h14 c1.1,0 2,-0.9 2,-2 V5 c0,-1.1 -0.9,-2 -2,-2 h-1 V1 h-2 z M19,19 H5 V8 h14 V19 z"
+                         scaleX="1.2" scaleY="1.2" styleClass="navy-icon"/>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Check-out" styleClass="row-sublabel"/>
+                    <DatePicker fx:id="checkOutPicker" promptText="Select Date"
+                                editable="false" maxWidth="Infinity"/>
+                </VBox>
+            </HBox>
+
+            <Label fx:id="durationLabel" text="Duration: – nights"
+                   styleClass="card-footer" maxWidth="Infinity" alignment="CENTER"/>
+        </VBox>
+
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <!-- ============ BACK / NEXT ============ -->
+        <HBox alignment="CENTER" maxWidth="936">
+            <Button text="BACK" onAction="#onBack" styleClass="back-nav-button"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="NEXT: ROOM SELECTION" onAction="#onNext" styleClass="next-button"/>
+        </HBox>
+
+        <Label text="TOUCH TO BEGIN  •  24/7 SELF-SERVICE" styleClass="footer-label"/>
+    </VBox>
+</StackPane>

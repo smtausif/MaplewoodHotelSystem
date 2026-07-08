@@ -28,4 +28,9 @@ public class FeedbackEntry {
     public String stars() {
         return "★".repeat(rating) + "☆".repeat(5 - rating) + "  " + rating + "/5";
     }
+
+    /** e.g. "★★★★☆" — just the glyphs, no numeric fraction. */
+    public String starsOnly() {
+        return "★".repeat(rating) + "☆".repeat(5 - rating);
+    }
 }
