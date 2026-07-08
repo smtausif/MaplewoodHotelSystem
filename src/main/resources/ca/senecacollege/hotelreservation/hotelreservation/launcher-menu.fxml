@@ -57,12 +57,15 @@
                 <Button text="5 · Add-ons" onAction="#openAddons"
                         styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                <Button text="6 · Estimate &amp; Confirm" onAction="#openReview"
+                <Button text="6 · Guest Details" onAction="#openGuestDetails"
                         styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                <Button text="7 · Confirmation" onAction="#openConfirmation"
+                <Button text="7 · Booking Summary" onAction="#openBookingSummary"
                         styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <Button text="8 · Confirmation" onAction="#openConfirmation"
+                        styleClass="menu-btn, menu-btn-ready" prefWidth="280"
+                        GridPane.columnIndex="1" GridPane.rowIndex="2"/>
             </GridPane>
         </VBox>
 

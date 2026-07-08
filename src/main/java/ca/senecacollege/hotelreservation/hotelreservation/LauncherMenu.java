@@ -34,8 +34,13 @@ public class LauncherMenu {
     }
 
     @FXML
-    private void openReview(ActionEvent event) {
-        SceneNavigator.go((Node) event.getSource(), "kiosk-review.fxml");
+    private void openGuestDetails(ActionEvent event) {
+        SceneNavigator.go((Node) event.getSource(), "kiosk-guest-details.fxml");
+    }
+
+    @FXML
+    private void openBookingSummary(ActionEvent event) {
+        SceneNavigator.go((Node) event.getSource(), "kiosk-booking-summary.fxml");
     }
 
     @FXML

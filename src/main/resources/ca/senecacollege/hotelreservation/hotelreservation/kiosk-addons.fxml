@@ -57,7 +57,7 @@
 
         <!-- ============ TITLE ============ -->
         <Label text="SELECT YOUR ADD-ONS" styleClass="page-title"/>
-        <Label text="Step 5 of 6 — prices are calculated from your guests, rooms, and nights" styleClass="step-label"/>
+        <Label text="Step 5 of 7 — prices are calculated from your guests, rooms, and nights" styleClass="step-label"/>
 
         <!-- ============ ADD-ONS CARD ============ -->
         <VBox styleClass="panel-card" maxWidth="936" spacing="14" VBox.vgrow="ALWAYS">

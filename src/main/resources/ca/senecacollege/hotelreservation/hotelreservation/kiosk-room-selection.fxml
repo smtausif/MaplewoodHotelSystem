@@ -58,7 +58,7 @@
 
         <!-- ============ TITLE ============ -->
         <Label text="SELECT YOUR ROOMS" styleClass="page-title"/>
-        <Label text="Step 4 of 6 — choose one or more room types and set a quantity for each" styleClass="step-label"/>
+        <Label text="Step 4 of 7 — choose one or more room types and set a quantity for each" styleClass="step-label"/>
 
         <!-- ============ ROOM CARDS ============ -->
         <HBox alignment="CENTER" spacing="16">

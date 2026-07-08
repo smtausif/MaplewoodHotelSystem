@@ -68,7 +68,7 @@
                 <Insets top="10"/>
             </VBox.margin>
         </Label>
-        <Label text="Step 2 of 6" styleClass="step-label"/>
+        <Label text="Step 2 of 7" styleClass="step-label"/>
 
         <!-- ============ GUESTS CARD ============ -->
         <VBox styleClass="panel-card" prefWidth="420" maxWidth="420" spacing="14">

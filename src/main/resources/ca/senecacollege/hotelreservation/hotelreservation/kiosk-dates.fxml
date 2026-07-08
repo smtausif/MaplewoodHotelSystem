@@ -69,7 +69,7 @@
                 <Insets top="10"/>
             </VBox.margin>
         </Label>
-        <Label text="Step 3 of 6" styleClass="step-label"/>
+        <Label text="Step 3 of 7" styleClass="step-label"/>
 
         <!-- ============ DATES CARD ============ -->
         <VBox styleClass="panel-card" prefWidth="440" maxWidth="440" spacing="14">

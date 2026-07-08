@@ -34,11 +34,11 @@ public class AddonsPage implements Initializable {
     @FXML private Label spaCountLabel;
     @FXML private Label spaBreakdownLabel;
 
-    // Prices
-    private static final int BREAKFAST_PER_GUEST_PER_NIGHT = 22;
-    private static final int WIFI_PER_ROOM_PER_NIGHT = 8;
-    private static final int PARKING_PER_ROOM_PER_NIGHT = 18;
-    private static final int SPA_PER_PERSON = 75;
+    // Prices (package-private: also read by BookingSummaryPage for its add-ons line items)
+    static final int BREAKFAST_PER_GUEST_PER_NIGHT = 22;
+    static final int WIFI_PER_ROOM_PER_NIGHT = 8;
+    static final int PARKING_PER_ROOM_PER_NIGHT = 18;
+    static final int SPA_PER_PERSON = 75;
 
     /** How many guests have opted into the spa package (0..totalGuests). */
     private int spaGuestCount = 0;
@@ -195,6 +195,6 @@ public class AddonsPage implements Initializable {
     @FXML
     private void onNext() {
         recalc();
-        SceneNavigator.go(clockLabel, "kiosk-review.fxml");
+        SceneNavigator.go(clockLabel, "kiosk-guest-details.fxml");
     }
 }
