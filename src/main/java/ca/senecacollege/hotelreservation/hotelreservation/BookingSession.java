@@ -1,6 +1,8 @@
 package ca.senecacollege.hotelreservation.hotelreservation;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Holds the in-progress booking as the guest moves through the kiosk pages.
@@ -8,34 +10,61 @@ import java.time.LocalDate;
  */
 public final class BookingSession {
 
-    // Guests & dates (page 2)
+    // Guests (page 2)
     public static int adults = 2;
     public static int children = 0;
+
+    // Dates (page 3)
     public static LocalDate checkIn = null;
     public static LocalDate checkOut = null;
     public static long nights = 0;
 
-    // Room (page 3)
-    public static String roomType = null;
-    public static int roomPrice = 0;
-    public static int roomQty = 1;
+    // Rooms (page 4) — one or more room types, each with its own quantity
+    public static final List<RoomSelection> selectedRooms = new ArrayList<>();
 
-    // Add-ons (page 4)
+    // Add-ons (page 5)
     public static boolean wifi = false;
     public static boolean breakfast = false;
     public static boolean parking = false;
     public static boolean spa = false;
+    public static int spaGuestCount = 0;
     public static double addonsSubtotal = 0;
 
-    // Guest details (page 5)
-    public static String guestName = "";
-    public static String guestPhone = "";
-    public static String guestEmail = "";
+    // Guest details (page 6)
+    public static final GuestInfo guest = new GuestInfo();
 
-    // Confirmation (page 6)
+    // Loyalty (page 6) — null memberId means "not a member" / not looked up yet
+    public static String loyaltyMemberId = null;
+    public static int loyaltyRedeemPoints = 0;
+
+    // Confirmation (page 7)
     public static String confirmationCode = "";
 
     private BookingSession() {
+    }
+
+    /** Total number of rooms across every selected room type. */
+    public static int totalRoomQty() {
+        int total = 0;
+        for (RoomSelection selection : selectedRooms) {
+            total += selection.quantity();
+        }
+        return total;
+    }
+
+    /** Total number of guests (adults + children) staying. */
+    public static int totalGuests() {
+        return adults + children;
+    }
+
+    /** Combined room subtotal across every selected room type, for the current stay length. */
+    public static double roomsSubtotal() {
+        long nightsForPricing = Math.max(nights, 1);
+        double subtotal = 0;
+        for (RoomSelection selection : selectedRooms) {
+            subtotal += selection.subtotal(nightsForPricing);
+        }
+        return subtotal;
     }
 
     public static void reset() {
@@ -44,17 +73,16 @@ public final class BookingSession {
         checkIn = null;
         checkOut = null;
         nights = 0;
-        roomType = null;
-        roomPrice = 0;
-        roomQty = 1;
+        selectedRooms.clear();
         wifi = false;
         breakfast = false;
         parking = false;
         spa = false;
+        spaGuestCount = 0;
         addonsSubtotal = 0;
-        guestName = "";
-        guestPhone = "";
-        guestEmail = "";
+        guest.reset();
+        loyaltyMemberId = null;
+        loyaltyRedeemPoints = 0;
         confirmationCode = "";
     }
 }

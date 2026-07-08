@@ -29,20 +29,30 @@
     <Region styleClass="cream-overlay"/>
 
     <!-- LAYER 3: content -->
-    <VBox alignment="TOP_CENTER" spacing="18">
+    <VBox alignment="TOP_CENTER" spacing="16">
         <padding>
-            <Insets top="28" right="40" bottom="24" left="40"/>
+            <Insets top="24" right="40" bottom="20" left="40"/>
         </padding>
 
         <!-- ============ HEADER ============ -->
         <HBox alignment="CENTER_LEFT">
-            <Button fx:id="rulesButton" onAction="#onRulesClicked" styleClass="rules-button"
-                    text="RULES &amp; REGULATIONS" contentDisplay="LEFT" graphicTextGap="10">
-                <graphic>
-                    <SVGPath content="M14,2 H6 C4.9,2 4,2.9 4,4 v16 c0,1.1 0.9,2 2,2 h12 c1.1,0 2,-0.9 2,-2 V8 L14,2 z M16,18 H8 v-2 h8 V18 z M16,14 H8 v-2 h8 V14 z M13,9 V3.5 L18.5,9 H13 z"
-                             scaleX="0.8" scaleY="0.8" styleClass="gold-icon"/>
-                </graphic>
-            </Button>
+            <VBox spacing="10" alignment="CENTER_LEFT">
+                <Button fx:id="rulesButton" onAction="#onRulesClicked" styleClass="rules-button"
+                        text="RULES &amp; REGULATIONS" contentDisplay="LEFT" graphicTextGap="10">
+                    <graphic>
+                        <SVGPath content="M14,2 H6 C4.9,2 4,2.9 4,4 v16 c0,1.1 0.9,2 2,2 h12 c1.1,0 2,-0.9 2,-2 V8 L14,2 z M16,18 H8 v-2 h8 V18 z M16,14 H8 v-2 h8 V14 z M13,9 V3.5 L18.5,9 H13 z"
+                                 scaleX="0.8" scaleY="0.8" styleClass="gold-icon"/>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="adminLoginButton" onAction="#onAdminLoginClicked" styleClass="admin-login-button"
+                        text="ADMIN LOGIN" contentDisplay="LEFT" graphicTextGap="10">
+                    <graphic>
+                        <SVGPath content="M12,17 c1.1,0 2,-0.9 2,-2 s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2 z M18,8 h-1 V6 c0,-2.76 -2.24,-5 -5,-5 S7,3.24 7,6 v2 H6 c-1.1,0 -2,0.9 -2,2 v10 c0,1.1 0.9,2 2,2 h12 c1.1,0 2,-0.9 2,-2 V10 c0,-1.1 -0.9,-2 -2,-2 z M9,6 c0,-1.66 1.34,-3 3,-3 s3,1.34 3,3 v2 H9 V6 z"
+                                 scaleX="0.7" scaleY="0.7" styleClass="dark-icon"/>
+                    </graphic>
+                </Button>
+            </VBox>
 
             <Region HBox.hgrow="ALWAYS"/>
 
@@ -69,16 +79,20 @@
 
             <Label text="Where every detail is crafted for your comfort." styleClass="tagline">
                 <VBox.margin>
-                    <Insets top="8"/>
+                    <Insets top="6"/>
                 </VBox.margin>
             </Label>
         </VBox>
 
+        <!-- ============ GUEST REVIEWS CTA ============ -->
+        <Button fx:id="guestReviewsButton" onAction="#onGuestReviewsClicked" styleClass="next-button"
+                text="⭐ Guest Reviews"/>
+
         <!-- ============ VIDEO CARD ============ -->
-        <StackPane fx:id="videoContainer" prefWidth="700" prefHeight="330"
-                   maxWidth="700" maxHeight="330" styleClass="video-card">
+        <StackPane fx:id="videoContainer" prefWidth="700" prefHeight="290"
+                   maxWidth="700" maxHeight="290" styleClass="video-card">
             <VBox.margin>
-                <Insets top="8"/>
+                <Insets top="6"/>
             </VBox.margin>
 
             <MediaView fx:id="mediaView"/>
@@ -127,7 +141,7 @@
         <Button fx:id="startButton" onAction="#onStartBooking" styleClass="start-button"
                 text="START NEW BOOKING" contentDisplay="RIGHT" graphicTextGap="16">
             <VBox.margin>
-                <Insets top="10"/>
+                <Insets top="8"/>
             </VBox.margin>
             <graphic>
                 <SVGPath content="M2,2 L10,10 L2,18" styleClass="chevron-icon"/>

@@ -16,7 +16,10 @@ public class HelloApplication extends Application {
         stage.setTitle("Maplewood Grand — UI Prototype (Milestone 1)");
         stage.setScene(scene);
         stage.show();
+
+
     }
+
 
     public static void main(String[] args) {
         launch();

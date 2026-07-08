@@ -25,16 +25,16 @@ public final class WaitlistStore {
         // sample entries (match the design mock)
         ENTRIES.add(new WaitlistEntry("Sofia Rossi", "Deluxe", 1,
                 LocalDate.of(2026, 7, 12), LocalDate.of(2026, 7, 15),
-                LocalDate.of(2026, 7, 1), "Room free now"));
+                LocalDate.of(2026, 7, 1), "Room free now", "301"));
         ENTRIES.add(new WaitlistEntry("Patel family", "Double", 2,
                 LocalDate.of(2026, 7, 14), LocalDate.of(2026, 7, 18),
-                LocalDate.of(2026, 7, 2), "Room free now"));
+                LocalDate.of(2026, 7, 2), "Room free now", null));
         ENTRIES.add(new WaitlistEntry("George Lin", "Penthouse", 1,
                 LocalDate.of(2026, 7, 20), LocalDate.of(2026, 7, 22),
-                LocalDate.of(2026, 7, 2), "Waiting"));
+                LocalDate.of(2026, 7, 2), "Waiting", "502"));
         ENTRIES.add(new WaitlistEntry("Hana Kim", "Single", 1,
                 LocalDate.of(2026, 7, 9), LocalDate.of(2026, 7, 11),
-                LocalDate.of(2026, 7, 3), "Waiting"));
+                LocalDate.of(2026, 7, 3), "Waiting", "415"));
     }
 
     private WaitlistStore() {

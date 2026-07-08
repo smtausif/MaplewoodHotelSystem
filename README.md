@@ -12,14 +12,15 @@ The app opens on a launcher screen where every part of the system is one click a
 
 ### Guest Kiosk (self-service)
 
-A complete six-step booking flow, styled for a touch-screen lobby kiosk:
+A complete seven-step booking flow, styled for a touch-screen lobby kiosk:
 
 1. **Welcome** — branded landing screen with a promo video player (play/pause, seek bar, mute, fullscreen), a live clock, and a *Start New Booking* call to action.
-2. **Guests & Dates** — adult/children steppers with sensible limits, calendar pickers that block past dates and invalid check-out dates, and a live night counter.
-3. **Room Selection** — four room types (Single, Double, Deluxe, Penthouse) with photos, descriptions, and per-night pricing. Selecting a room highlights its card; a quantity stepper supports multi-room bookings.
-4. **Add-ons** — Wi-Fi, breakfast, parking (per night) and a spa package (per stay). The subtotal is calculated against the actual number of nights in the booking.
-5. **Review & Confirm** — guest details form with validation (name and phone required, email format-checked) beside a live estimate: room subtotal, add-ons, loyalty discount, 13% tax, and total.
-6. **Confirmation** — personalized thank-you, generated confirmation code (e.g. `MPL-2026-4471`), simulated email receipt, and a *Done* button that resets the kiosk for the next guest.
+2. **Guests** — adult/children steppers with sensible limits and a live guest counter.
+3. **Dates** — calendar pickers that block past dates and invalid check-out dates, with a live night counter.
+4. **Room Selection** — four room types (Single, Double, Deluxe, Penthouse) with photos, descriptions, and per-night pricing. Each card has its own +/- quantity stepper, so a guest can reserve several room types in one booking; a live Reservation Summary table and Total Rooms / Total Price chips update as quantities change.
+5. **Add-ons** — Wi-Fi, breakfast, parking (per night) and a spa package (per stay). The subtotal is calculated against the actual number of nights in the booking.
+6. **Review & Confirm** — guest details form with validation (name and phone required, email format-checked) beside a live estimate: room subtotal (across all selected room types), add-ons, loyalty discount, 13% tax, and total.
+7. **Confirmation** — personalized thank-you, generated confirmation code (e.g. `MPL-2026-4471`), simulated email receipt, and a *Done* button that resets the kiosk for the next guest.
 
 Booking data flows through every step via a shared `BookingSession`, so the estimate and confirmation always reflect the guest's real choices.
 
@@ -58,12 +59,15 @@ src/main/java/ca/senecacollege/hotelreservation/hotelreservation/
 ├── SceneNavigator.java              # one-line scene switching between pages
 │
 ├── WelcomePage.java                 # kiosk screens
-├── GuestsDatesPage.java
+├── GuestsPage.java
+├── DatesPage.java
 ├── RoomSelectionPage.java
 ├── AddonsPage.java
 ├── ReviewConfirmPage.java
 ├── ConfirmationPage.java
 ├── BookingSession.java              # in-progress booking state, shared across steps
+├── RoomType.java                    # room catalog: price, capacity, image, description per type
+├── RoomSelection.java               # a room type + quantity line within a booking
 │
 ├── AdminLoginPage.java              # admin screens
 ├── AdminDashboardPage.java
@@ -77,7 +81,8 @@ src/main/java/ca/senecacollege/hotelreservation/hotelreservation/
 src/main/resources/ca/senecacollege/hotelreservation/hotelreservation/
 ├── launcher-menu.fxml
 ├── kiosk-welcome.fxml
-├── kiosk-guests-dates.fxml
+├── kiosk-guests.fxml
+├── kiosk-dates.fxml
 ├── kiosk-room-selection.fxml
 ├── kiosk-addons.fxml
 ├── kiosk-review.fxml
@@ -98,7 +103,8 @@ src/main/resources/
 ## Architecture Notes
 
 - **Navigation** — `SceneNavigator.go(node, "page.fxml")` swaps the scene root in place, so the window keeps its size and position while moving between screens.
-- **State** — `BookingSession` carries the guest's booking through the kiosk; `AdminSession` tracks the signed-in staff member; `ReservationStore` holds reservations and the payment ledger in memory and is shared by the dashboard, detail, and payment screens, so edits on one screen appear on the others. Swapping the store for a database layer is the intended next step.
+- **State** — `BookingSession` carries the guest's booking through the kiosk, including a `List<RoomSelection>` so a booking can span several room types; `AdminSession` tracks the signed-in staff member; `ReservationStore` holds reservations and the payment ledger in memory and is shared by the dashboard, detail, and payment screens, so edits on one screen appear on the others. Swapping the store for a database layer is the intended next step.
+- **Room catalog** — `RoomType` is the single source of truth for price, capacity, image, and description per room category; both the kiosk's `RoomSelectionPage` and the admin `ReservationStore.priceOf`/`capacityOf` lookups delegate to it instead of duplicating hardcoded values.
 - **Tables without reflection** — table columns use lambda cell-value factories instead of `PropertyValueFactory`, which keeps the module system happy (no `opens ... to javafx.base` required).
 - **FXML gotcha handled** — `$` is a variable-reference prefix in FXML, so all price text containing dollar signs is set from the controllers.
 

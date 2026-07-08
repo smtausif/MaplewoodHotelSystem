@@ -33,7 +33,7 @@
         <HBox alignment="CENTER_LEFT" spacing="12">
             <VBox spacing="2">
                 <Label text="Loyalty Program" styleClass="dashboard-title"/>
-                <Label text="R E W A R D S   &amp; R E D E M P T I O N" styleClass="portal-sub"/>
+                <Label text="R E W A R D S   D A S H B O A R D" styleClass="portal-sub"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
             <VBox alignment="CENTER_RIGHT" spacing="4">
@@ -45,16 +45,35 @@
             </VBox>
         </HBox>
 
-        <HBox styleClass="res-banner" alignment="CENTER_LEFT">
+        <!-- ============ MEMBER INFORMATION ============ -->
+        <Label text="M E M B E R   I N F O R M A T I O N" styleClass="section-label"/>
+        <HBox styleClass="panel-card" spacing="0">
             <padding>
-                <Insets top="12" right="18" bottom="12" left="18"/>
+                <Insets top="16" right="20" bottom="16" left="20"/>
             </padding>
-            <Label fx:id="memberLabel" styleClass="banner-text"/>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="MEMBER NAME" styleClass="stat-title"/>
+                <Label fx:id="memberNameValue" styleClass="section-heading"/>
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="MEMBER ID" styleClass="stat-title"/>
+                <Label fx:id="memberIdValue" styleClass="section-heading"/>
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="MEMBERSHIP TIER" styleClass="stat-title"/>
+                <Label fx:id="memberTierValue" styleClass="section-heading"/>
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="CURRENT POINTS" styleClass="stat-title"/>
+                <Label fx:id="memberPointsValue" styleClass="section-heading"/>
+            </VBox>
         </HBox>
 
+        <!-- ============ REWARDS SUMMARY ============ -->
+        <Label text="R E W A R D S   S U M M A R Y" styleClass="section-label"/>
         <HBox spacing="14">
             <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="200">
-                <Label text="POINTS BALANCE" styleClass="stat-title"/>
+                <Label text="AVAILABLE POINTS" styleClass="stat-title"/>
                 <Label fx:id="balanceValue" styleClass="stat-value"/>
             </VBox>
             <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="200">
@@ -62,28 +81,29 @@
                 <Label fx:id="earnedValue" styleClass="stat-value"/>
             </VBox>
             <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="200">
-                <Label text="REDEEMED" styleClass="stat-title"/>
+                <Label text="LIFETIME REDEEMED" styleClass="stat-title"/>
                 <Label fx:id="redeemedValue" styleClass="stat-value"/>
             </VBox>
-            <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="230">
-                <Label text="EARN RATE" styleClass="stat-title"/>
-                <Label fx:id="rateValue" styleClass="stat-value"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="220">
+                <Label text="CURRENT REDEMPTION RATE" styleClass="stat-title"/>
+                <Label fx:id="redemptionRateValue" styleClass="stat-value"/>
+            </VBox>
+            <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="200">
+                <Label text="CURRENT EARN RATE" styleClass="stat-title"/>
+                <Label fx:id="earnRateValue" styleClass="stat-value"/>
             </VBox>
         </HBox>
 
-        <Label text="E A R N I N G   &amp; R E D E M P T I O N   H I S T O R Y" styleClass="section-label"/>
+        <!-- ============ RECENT ACTIVITY ============ -->
+        <Label text="R E C E N T   A C T I V I T Y" styleClass="section-label"/>
         <TableView fx:id="table" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="dateCol" text="Date" prefWidth="120"/>
-                <TableColumn fx:id="typeCol" text="Type" prefWidth="130"/>
-                <TableColumn fx:id="resCol" text="Reservation" prefWidth="160"/>
-                <TableColumn fx:id="pointsCol" text="Points" prefWidth="140"/>
-                <TableColumn fx:id="valueCol" text="Value" prefWidth="150"/>
-                <TableColumn fx:id="byCol" text="By" prefWidth="150"/>
+                <TableColumn fx:id="resCol" text="Reservation" prefWidth="200"/>
+                <TableColumn fx:id="typeCol" text="Type" prefWidth="160"/>
+                <TableColumn fx:id="pointsCol" text="Points" prefWidth="160"/>
+                <TableColumn fx:id="dateCol" text="Date" prefWidth="160"/>
             </columns>
         </TableView>
-
-        <Label text="Redemption is capped per reservation; discounts are applied before loyalty redemption."
-               styleClass="note-label"/>
     </VBox>
 </StackPane>

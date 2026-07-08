@@ -36,4 +36,9 @@ public final class FeedbackStore {
     public static List<FeedbackEntry> all() {
         return ENTRIES;
     }
+
+    /** Adds a newly-submitted review to the top of the list — in memory for this session only. */
+    public static void add(FeedbackEntry entry) {
+        ENTRIES.add(0, entry);
+    }
 }

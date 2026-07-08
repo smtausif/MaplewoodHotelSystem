@@ -59,6 +59,8 @@
             <DatePicker fx:id="toDate" promptText="To" prefWidth="150" editable="false"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="New Reservation" onAction="#onNewReservation" styleClass="menu-btn"/>
+            <Button text="Waitlist" onAction="#onOpenWaitlist" styleClass="menu-btn"/>
+            <Button text="Reports" onAction="#onOpenReports" styleClass="menu-btn"/>
         </HBox>
 
         <!-- ============ TABLE ============ -->

@@ -31,20 +31,25 @@ public class ConfirmationPage implements Initializable {
         startClock();
 
         // "Thank you, Amara!" — first name only
-        String name = BookingSession.guestName;
-        if (name != null && !name.isBlank()) {
-            String firstName = name.trim().split("\\s+")[0];
-            thankYouLabel.setText("Thank you, " + firstName + "!");
+        String firstName = BookingSession.guest.getFirstName();
+        if (firstName != null && !firstName.isBlank()) {
+            thankYouLabel.setText("Thank you, " + firstName.trim() + "!");
         } else {
             thankYouLabel.setText("Thank you!");
         }
 
-        // "Your Double Room is booked for 4 nights."
-        if (BookingSession.roomType != null) {
+        // "Your 2× Deluxe Room, 1× Penthouse Suite is booked for 4 nights."
+        if (!BookingSession.selectedRooms.isEmpty()) {
             long nights = Math.max(BookingSession.nights, 1);
-            String qtyPart = (BookingSession.roomQty > 1) ? BookingSession.roomQty + "× " : "";
-            bookedLineLabel.setText("Your " + qtyPart + BookingSession.roomType
-                    + " is booked for " + nights + (nights == 1 ? " night." : " nights."));
+            StringBuilder rooms = new StringBuilder();
+            for (RoomSelection selection : BookingSession.selectedRooms) {
+                if (rooms.length() > 0) {
+                    rooms.append(", ");
+                }
+                rooms.append(selection.quantity()).append("× ").append(selection.roomType().displayName());
+            }
+            bookedLineLabel.setText("Your " + rooms + " is booked for "
+                    + nights + (nights == 1 ? " night." : " nights."));
         } else {
             bookedLineLabel.setText("Your booking is complete.");
         }
@@ -81,7 +86,7 @@ public class ConfirmationPage implements Initializable {
     private void onEmailCopy() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Maplewood Grand");
-        String email = BookingSession.guestEmail;
+        String email = BookingSession.guest.getEmail();
         if (email != null && !email.isBlank()) {
             alert.setHeaderText("Email sent");
             alert.setContentText("A copy of your confirmation has been sent to:\n" + email

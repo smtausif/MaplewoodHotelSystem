@@ -14,8 +14,13 @@ public class LauncherMenu {
     }
 
     @FXML
-    private void openGuestsDates(ActionEvent event) {
-        SceneNavigator.go((Node) event.getSource(), "kiosk-guests-dates.fxml");
+    private void openGuests(ActionEvent event) {
+        SceneNavigator.go((Node) event.getSource(), "kiosk-guests.fxml");
+    }
+
+    @FXML
+    private void openDates(ActionEvent event) {
+        SceneNavigator.go((Node) event.getSource(), "kiosk-dates.fxml");
     }
 
     @FXML

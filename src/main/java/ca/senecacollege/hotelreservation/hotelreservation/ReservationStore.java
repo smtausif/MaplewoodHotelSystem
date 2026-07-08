@@ -38,9 +38,13 @@ public final class ReservationStore {
         return PAYMENTS.computeIfAbsent(resNo, k -> new ArrayList<>());
     }
 
-    /** Full bill for a reservation: rate × rooms × nights + 13% tax. */
+    /** Full bill for a reservation: each room priced at its own type's rate × nights, plus 13% tax. */
     public static double totalBillOf(Reservation r) {
-        return Math.round(priceOf(r.roomType) * r.qty * r.nights * 1.13 * 100) / 100.0;
+        double subtotal = 0;
+        for (RoomSelection selection : r.rooms) {
+            subtotal += selection.subtotal(r.nights);
+        }
+        return Math.round(subtotal * 1.13 * 100) / 100.0;
     }
 
     /** Sum of all payments (refunds are negative). */
@@ -133,19 +137,11 @@ public final class ReservationStore {
 
     /** Price per night for a room type. */
     public static int priceOf(String roomType) {
-        return switch (roomType) {
-            case "Single" -> 129;
-            case "Deluxe" -> 259;
-            case "Penthouse" -> 429;
-            default -> 189; // Double
-        };
+        return RoomType.fromShortName(roomType).pricePerNight();
     }
 
     /** How many people one room of this type sleeps. */
     public static int capacityOf(String roomType) {
-        return switch (roomType) {
-            case "Double" -> 4;
-            default -> 2; // Single, Deluxe, Penthouse
-        };
+        return RoomType.fromShortName(roomType).capacity();
     }
 }

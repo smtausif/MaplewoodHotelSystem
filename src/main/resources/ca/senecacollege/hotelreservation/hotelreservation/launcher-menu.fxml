@@ -45,21 +45,24 @@
                 <Button text="1 · Welcome" onAction="#openWelcome"
                         styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                <Button text="2 · Guests &amp; Dates" onAction="#openGuestsDates"
+                <Button text="2 · Guests" onAction="#openGuests"
                         styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                <Button text="3 · Room Selection" onAction="#openRoomSelection"
+                <Button text="3 · Dates" onAction="#openDates"
                         styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                <Button text="4 · Add-ons" onAction="#openAddons"
+                <Button text="4 · Room Selection" onAction="#openRoomSelection"
                         styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                <Button text="5 · Estimate &amp; Confirm" onAction="#openReview"
+                <Button text="5 · Add-ons" onAction="#openAddons"
                         styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                <Button text="6 · Confirmation" onAction="#openConfirmation"
+                <Button text="6 · Estimate &amp; Confirm" onAction="#openReview"
                         styleClass="menu-btn, menu-btn-ready" prefWidth="280"
                         GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                <Button text="7 · Confirmation" onAction="#openConfirmation"
+                        styleClass="menu-btn, menu-btn-ready" prefWidth="280"
+                        GridPane.columnIndex="0" GridPane.rowIndex="2"/>
             </GridPane>
         </VBox>
 

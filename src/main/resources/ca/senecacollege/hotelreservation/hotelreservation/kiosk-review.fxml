@@ -2,10 +2,17 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -25,6 +32,7 @@
 
     <Region styleClass="cream-overlay"/>
 
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="clear-scroll">
     <VBox alignment="TOP_CENTER" spacing="10">
         <padding>
             <Insets top="20" right="36" bottom="18" left="36"/>
@@ -57,38 +65,100 @@
 
         <!-- ============ TITLE ============ -->
         <Label text="REVIEW AND CONFIRM" styleClass="page-title"/>
-        <Label text="Step 5 of 5" styleClass="step-label"/>
+        <Label text="Step 6 of 6" styleClass="step-label"/>
 
         <!-- ============ MAIN CARD ============ -->
-        <HBox styleClass="panel-card" maxWidth="936" spacing="26" VBox.vgrow="ALWAYS">
+        <HBox styleClass="panel-card" maxWidth="952" spacing="24" VBox.vgrow="ALWAYS">
             <padding>
                 <Insets top="24" right="28" bottom="24" left="28"/>
             </padding>
 
             <!-- LEFT: guest details -->
-            <VBox spacing="16" prefWidth="420">
+            <VBox spacing="14" prefWidth="480">
                 <Label text="Guest Details" styleClass="form-heading"/>
 
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label text="Full name" styleClass="form-label" prefWidth="90"/>
-                    <TextField fx:id="nameField" prefWidth="270" styleClass="form-field"/>
-                    <Label text="*" styleClass="required-star"/>
-                </HBox>
+                <GridPane hgap="16" vgap="12">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                        <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                    </columnConstraints>
 
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label text="Phone" styleClass="form-label" prefWidth="90"/>
-                    <TextField fx:id="phoneField" prefWidth="270" styleClass="form-field"/>
-                    <Label text="*" styleClass="required-star"/>
-                </HBox>
+                    <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <HBox alignment="CENTER_LEFT" spacing="4">
+                            <Label text="First Name" styleClass="form-label"/>
+                            <Label text="*" styleClass="required-star"/>
+                        </HBox>
+                        <TextField fx:id="firstNameField" maxWidth="Infinity" styleClass="form-field"/>
+                    </VBox>
 
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label text="Email" styleClass="form-label" prefWidth="90"/>
-                    <TextField fx:id="emailField" prefWidth="270" styleClass="form-field"/>
-                </HBox>
+                    <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <HBox alignment="CENTER_LEFT" spacing="4">
+                            <Label text="Last Name" styleClass="form-label"/>
+                            <Label text="*" styleClass="required-star"/>
+                        </HBox>
+                        <TextField fx:id="lastNameField" maxWidth="Infinity" styleClass="form-field"/>
+                    </VBox>
+
+                    <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <HBox alignment="CENTER_LEFT" spacing="4">
+                            <Label text="Phone Number" styleClass="form-label"/>
+                            <Label text="*" styleClass="required-star"/>
+                        </HBox>
+                        <TextField fx:id="phoneField" maxWidth="Infinity" styleClass="form-field"/>
+                    </VBox>
+
+                    <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <HBox alignment="CENTER_LEFT" spacing="4">
+                            <Label text="Email Address" styleClass="form-label"/>
+                            <Label text="*" styleClass="required-star"/>
+                        </HBox>
+                        <TextField fx:id="emailField" maxWidth="Infinity" styleClass="form-field"/>
+                    </VBox>
+
+                    <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2">
+                        <HBox alignment="CENTER_LEFT" spacing="4">
+                            <Label text="Street Address" styleClass="form-label"/>
+                            <Label text="*" styleClass="required-star"/>
+                        </HBox>
+                        <TextField fx:id="streetAddressField" maxWidth="Infinity" styleClass="form-field"/>
+                    </VBox>
+
+                    <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="3">
+                        <HBox alignment="CENTER_LEFT" spacing="4">
+                            <Label text="City" styleClass="form-label"/>
+                            <Label text="*" styleClass="required-star"/>
+                        </HBox>
+                        <TextField fx:id="cityField" maxWidth="Infinity" styleClass="form-field"/>
+                    </VBox>
+
+                    <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                        <HBox alignment="CENTER_LEFT" spacing="4">
+                            <Label text="Province / State" styleClass="form-label"/>
+                            <Label text="*" styleClass="required-star"/>
+                        </HBox>
+                        <TextField fx:id="provinceField" maxWidth="Infinity" styleClass="form-field"/>
+                    </VBox>
+
+                    <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="4">
+                        <HBox alignment="CENTER_LEFT" spacing="4">
+                            <Label text="Postal / ZIP Code" styleClass="form-label"/>
+                            <Label text="*" styleClass="required-star"/>
+                        </HBox>
+                        <TextField fx:id="postalCodeField" maxWidth="Infinity" styleClass="form-field"/>
+                    </VBox>
+
+                    <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                        <HBox alignment="CENTER_LEFT" spacing="4">
+                            <Label text="Country" styleClass="form-label"/>
+                            <Label text="*" styleClass="required-star"/>
+                        </HBox>
+                        <TextField fx:id="countryField" maxWidth="Infinity" styleClass="form-field"/>
+                    </VBox>
+                </GridPane>
 
                 <Label fx:id="stayInfoLabel" styleClass="note-label" wrapText="true">
                     <VBox.margin>
-                        <Insets top="10"/>
+                        <Insets top="6"/>
                     </VBox.margin>
                 </Label>
             </VBox>
@@ -113,7 +183,7 @@
                 </HBox>
 
                 <HBox alignment="CENTER_LEFT">
-                    <Label text="Loyalty discount" styleClass="estimate-line"/>
+                    <Label fx:id="discountLineLabel" text="Loyalty discount" styleClass="estimate-line"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Label fx:id="discountAmountLabel" styleClass="estimate-amount"/>
                 </HBox>
@@ -138,6 +208,57 @@
             </VBox>
         </HBox>
 
+        <!-- ============ MAPLEWOOD REWARDS ============ -->
+        <VBox styleClass="panel-card" maxWidth="952" spacing="10">
+            <padding>
+                <Insets top="18" right="28" bottom="18" left="28"/>
+            </padding>
+
+            <Label text="Maplewood Rewards" styleClass="form-heading"/>
+
+            <HBox alignment="CENTER_LEFT" spacing="20">
+                <Label text="Are you a Maplewood Rewards Member?" styleClass="form-label"/>
+                <RadioButton fx:id="memberYesRadio" text="Yes" styleClass="loyalty-radio" onAction="#onMemberChoice">
+                    <toggleGroup>
+                        <ToggleGroup fx:id="memberGroup"/>
+                    </toggleGroup>
+                </RadioButton>
+                <RadioButton fx:id="memberNoRadio" text="No" styleClass="loyalty-radio"
+                             toggleGroup="$memberGroup" selected="true" onAction="#onMemberChoice"/>
+            </HBox>
+
+            <HBox fx:id="lookupRow" alignment="CENTER_LEFT" spacing="12" managed="false" visible="false">
+                <TextField fx:id="memberLookupField" promptText="Membership ID or Email"
+                           styleClass="form-field" prefWidth="260"/>
+                <Button text="Check Membership" onAction="#onCheckMembership" styleClass="back-nav-button-small"/>
+                <Label fx:id="lookupMessageLabel" styleClass="field-error" wrapText="true"/>
+            </HBox>
+
+            <VBox fx:id="memberFoundBox" spacing="10" managed="false" visible="false">
+                <Label fx:id="welcomeBackLabel" styleClass="card-title"/>
+
+                <HBox spacing="14">
+                    <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="150">
+                        <Label text="MEMBERSHIP" styleClass="stat-title"/>
+                        <Label fx:id="memberTierValue" styleClass="stat-value"/>
+                    </VBox>
+                    <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="170">
+                        <Label text="AVAILABLE POINTS" styleClass="stat-title"/>
+                        <Label fx:id="memberPointsValue" styleClass="stat-value"/>
+                    </VBox>
+                </HBox>
+
+                <CheckBox fx:id="redeemCheck" text="Redeem Points" styleClass="addon-check" onAction="#onRedeemToggle"/>
+
+                <HBox fx:id="redeemOptionsRow" alignment="CENTER_LEFT" spacing="12" managed="false" visible="false">
+                    <ComboBox fx:id="redeemAmountCombo" styleClass="form-field" prefWidth="280"/>
+                    <Label fx:id="redeemBreakdownLabel" styleClass="row-sublabel"/>
+                </HBox>
+
+                <Label fx:id="earnPointsLabel" styleClass="note-label" wrapText="true"/>
+            </VBox>
+        </VBox>
+
         <!-- ============ BACK / CONFIRM ============ -->
         <HBox alignment="CENTER" maxWidth="936">
             <VBox.margin>
@@ -148,4 +269,5 @@
             <Button text="CONFIRM BOOKING" onAction="#onConfirm" styleClass="next-button"/>
         </HBox>
     </VBox>
+    </ScrollPane>
 </StackPane>

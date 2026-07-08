@@ -2,22 +2,41 @@ package ca.senecacollege.hotelreservation.hotelreservation;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
 
+import java.io.File;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 public class AdminPaymentPage implements Initializable {
 
@@ -28,6 +47,7 @@ public class AdminPaymentPage implements Initializable {
     @FXML private ComboBox<String> methodCombo;
     @FXML private ComboBox<String> typeCombo;
     @FXML private TextField amountField;
+    @FXML private Button redeemPointsButton;
 
     @FXML private TableView<Payment> table;
     @FXML private TableColumn<Payment, String> dateCol;
@@ -40,9 +60,14 @@ public class AdminPaymentPage implements Initializable {
     @FXML private Label paidValue;
     @FXML private Label balanceValue;
     @FXML private VBox balanceChip;
+    @FXML private Label loyaltyDiscountValue;
+    @FXML private Label loyaltyRedeemedValue;
 
     private Reservation reservation;
     private double balance = 0;
+
+    /** Set only if this reservation's guest matches a demo loyalty member. */
+    private LoyaltyMember loyaltyMember;
 
     private static final DateTimeFormatter DAY_FMT = DateTimeFormatter.ofPattern("dd MMM", Locale.ENGLISH);
 
@@ -62,6 +87,10 @@ public class AdminPaymentPage implements Initializable {
                 + "  —  Room #" + roomNo + "  ·  " + reservation.roomsText()
                 + "  ·  " + reservation.nights + " night" + (reservation.nights == 1 ? "" : "s"));
         statusChip.setText(reservation.status.toUpperCase());
+
+        // loyalty — only enabled if this reservation's guest matches a demo loyalty member
+        loyaltyMember = LoyaltyStore.findByGuestName(reservation.guest).orElse(null);
+        redeemPointsButton.setDisable(loyaltyMember == null);
 
         // combos
         methodCombo.setItems(FXCollections.observableArrayList("Cash", "Card", "Debit"));
@@ -115,6 +144,16 @@ public class AdminPaymentPage implements Initializable {
         } else {
             balanceValue.setText(money(balance));
         }
+
+        if (loyaltyMember != null) {
+            int redeemedPoints = LoyaltyStore.redeemedOnReservation(loyaltyMember.memberId(), reservation.resNo);
+            double discountValue = redeemedPoints / (double) LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED;
+            loyaltyDiscountValue.setText(discountValue > 0 ? "-" + money(discountValue) : money(0));
+            loyaltyRedeemedValue.setText(String.format("%,d", redeemedPoints) + " pts");
+        } else {
+            loyaltyDiscountValue.setText(money(0));
+            loyaltyRedeemedValue.setText("0 pts");
+        }
     }
 
     /* ---------- actions ---------- */
@@ -157,21 +196,275 @@ public class AdminPaymentPage implements Initializable {
         refresh();
     }
 
+    /* ---------- loyalty redemption ---------- */
+
+    @FXML
+    private void onRedeemPoints() {
+        if (loyaltyMember == null) {
+            return; // button is disabled in this case, but guard anyway
+        }
+
+        int available = LoyaltyStore.balanceOf(loyaltyMember.memberId());
+        if (available <= 0) {
+            warn("No points available", loyaltyMember.name() + " has no loyalty points available to redeem.");
+            return;
+        }
+        if (balance <= 0.004) {
+            warn("Nothing owing", "This reservation's balance is already settled — "
+                    + "there's nothing to redeem points against.");
+            return;
+        }
+
+        // options are capped so a redemption can never exceed points owned or the balance due
+        int maxByBalance = (int) Math.floor(balance) * LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED;
+        int cap = Math.min(available, maxByBalance);
+        cap = Math.min(cap, LoyaltyStore.REDEEM_CAP_PER_RES);
+        cap = (cap / 100) * 100; // keep the dollar value clean
+
+        Map<String, Integer> options = new LinkedHashMap<>();
+        for (int tier : new int[]{500, 1000, 2000}) {
+            if (tier <= cap) {
+                options.put(String.format("%,d", tier) + " points  (" + money(tier / 100.0) + ")", tier);
+            }
+        }
+        if (cap > 0) {
+            options.put("Maximum Available — " + String.format("%,d", cap) + " points ("
+                    + money(cap / 100.0) + ")", cap);
+        }
+        if (options.isEmpty()) {
+            warn("Can't redeem points", "There isn't enough balance due or available points to redeem right now.");
+            return;
+        }
+
+        Optional<Integer> chosen = showRedeemDialog(available, options);
+        if (chosen.isEmpty()) {
+            return;
+        }
+
+        int points = chosen.get();
+        double dollarValue = points / (double) LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED;
+
+        LoyaltyStore.redeem(loyaltyMember.memberId(), points, reservation.resNo, staffName());
+        ReservationStore.paymentsFor(reservation.resNo).add(new Payment(
+                LocalDate.now(), "Loyalty Discount", "Points", dollarValue, staffName()));
+        refresh();
+
+        Alert done = new Alert(Alert.AlertType.INFORMATION);
+        done.setTitle("Maplewood Grand — Admin");
+        done.setHeaderText("Points redeemed");
+        done.setContentText(String.format("%,d", points) + " points redeemed for " + money(dollarValue)
+                + " off " + reservation.guest + "'s balance.\nRemaining balance: " + money(balance));
+        done.showAndWait();
+    }
+
+    private Optional<Integer> showRedeemDialog(int available, Map<String, Integer> options) {
+        Dialog<Integer> dialog = new Dialog<>();
+        dialog.setTitle("Maplewood Grand — Admin");
+        dialog.setHeaderText("Redeem Loyalty Points — " + loyaltyMember.name());
+        dialog.getDialogPane().getStylesheets().add(getClass().getResource("kiosk.css").toExternalForm());
+
+        VBox content = new VBox(10);
+        content.getChildren().addAll(
+                infoRow("Member ID:", loyaltyMember.memberId()),
+                infoRow("Available Points:", String.format("%,d", available) + " pts"),
+                infoRow("Current Balance Due:", money(balance)),
+                infoRow("Conversion:", "1 point = "
+                        + money(1.0 / LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED) + " CAD")
+        );
+
+        ToggleGroup group = new ToggleGroup();
+        VBox optionsBox = new VBox(8);
+        Map<RadioButton, Integer> radioPoints = new LinkedHashMap<>();
+        boolean first = true;
+        for (Map.Entry<String, Integer> entry : options.entrySet()) {
+            RadioButton rb = new RadioButton(entry.getKey());
+            rb.setToggleGroup(group);
+            rb.getStyleClass().add("loyalty-radio");
+            if (first) {
+                rb.setSelected(true);
+                first = false;
+            }
+            radioPoints.put(rb, entry.getValue());
+            optionsBox.getChildren().add(rb);
+        }
+        content.getChildren().add(optionsBox);
+        dialog.getDialogPane().setContent(content);
+
+        ButtonType applyType = new ButtonType("Apply", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(applyType, ButtonType.CANCEL);
+
+        dialog.setResultConverter(bt -> {
+            if (bt != applyType) {
+                return null;
+            }
+            for (Map.Entry<RadioButton, Integer> e : radioPoints.entrySet()) {
+                if (e.getKey().isSelected()) {
+                    return e.getValue();
+                }
+            }
+            return null;
+        });
+
+        return dialog.showAndWait();
+    }
+
+    private HBox infoRow(String label, String value) {
+        HBox row = new HBox(10);
+        Label l = new Label(label);
+        l.getStyleClass().add("filter-label");
+        Label v = new Label(value);
+        v.getStyleClass().add("section-heading");
+        row.getChildren().addAll(l, v);
+        return row;
+    }
+
+    /* ---------- checkout ---------- */
+
     @FXML
     private void onCheckout() {
         if (balance > 0.004) {
-            warn("Checkout blocked", "The balance must be fully settled before checkout.\n"
+            warn("Checkout blocked", "This reservation cannot be checked out until payment is complete.\n"
                     + "Outstanding balance: " + money(balance));
             return;
         }
 
-        // settle the reservation: mark checked-out, zero balance, free the rooms
+        showFinalBillDialog();
+        completeCheckout();
+    }
+
+    private void showFinalBillDialog() {
+        List<String> lines = buildFinalBillLines();
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Maplewood Grand — Final Bill");
+        dialog.setHeaderText("Final Bill — " + reservation.resNo);
+        dialog.getDialogPane().getStylesheets().add(getClass().getResource("kiosk.css").toExternalForm());
+
+        TextArea billArea = new TextArea(String.join("\n", lines));
+        billArea.setEditable(false);
+        billArea.setWrapText(false);
+        billArea.setPrefSize(480, 380);
+        billArea.setStyle("-fx-font-family: 'Courier New', monospace; -fx-font-size: 12px;");
+        dialog.getDialogPane().setContent(billArea);
+
+        ButtonType printType = new ButtonType("Print Bill", ButtonBar.ButtonData.OTHER);
+        ButtonType saveType = new ButtonType("Save PDF", ButtonBar.ButtonData.OTHER);
+        ButtonType closeType = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(printType, saveType, closeType);
+
+        // Print/Save don't close the dialog — the guest's bill stays on screen until "Close"
+        Button printBtn = (Button) dialog.getDialogPane().lookupButton(printType);
+        printBtn.addEventFilter(ActionEvent.ACTION, e -> {
+            simulatePrint();
+            e.consume();
+        });
+        Button saveBtn = (Button) dialog.getDialogPane().lookupButton(saveType);
+        saveBtn.addEventFilter(ActionEvent.ACTION, e -> {
+            simulateSavePdf(lines);
+            e.consume();
+        });
+
+        dialog.showAndWait();
+    }
+
+    private List<String> buildFinalBillLines() {
+        List<String> lines = new ArrayList<>();
+        lines.add("MAPLEWOOD GRAND HOTEL — FINAL BILL");
+        lines.add("");
+        lines.add("Reservation Number:  " + reservation.resNo);
+        lines.add("Guest Name:          " + reservation.guest);
+        lines.add("Stay Dates:          " + reservation.checkIn + "  to  "
+                + reservation.checkIn.plusDays(reservation.nights)
+                + "  (" + reservation.nights + " night" + (reservation.nights == 1 ? "" : "s") + ")");
+        lines.add("Room(s):             " + reservation.roomsText());
+        lines.add("Add-ons:             None");
+        lines.add("");
+        lines.add("-------------------------------------------");
+
+        double roomSubtotal = 0;
+        for (RoomSelection selection : reservation.rooms) {
+            double lineTotal = selection.subtotal(reservation.nights);
+            roomSubtotal += lineTotal;
+            lines.add(String.format("%-28s %10s",
+                    selection.quantity() + "x " + selection.roomType().shortName(), money(lineTotal)));
+        }
+        lines.add(String.format("%-28s %10s", "Room Subtotal", money(roomSubtotal)));
+
+        double total = ReservationStore.totalBillOf(reservation);
+        double tax = total - roomSubtotal;
+
+        double loyaltyDiscount = loyaltyMember != null
+                ? LoyaltyStore.redeemedOnReservation(loyaltyMember.memberId(), reservation.resNo)
+                        / (double) LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED
+                : 0;
+        lines.add(String.format("%-28s %10s", "Discounts", money(0)));
+        lines.add(String.format("%-28s %10s", "Loyalty Discount",
+                loyaltyDiscount > 0 ? "-" + money(loyaltyDiscount) : money(0)));
+        lines.add(String.format("%-28s %10s", "Tax (13%)", money(tax)));
+        lines.add("-------------------------------------------");
+        lines.add(String.format("%-28s %10s", "Total", money(total)));
+
+        double paid = ReservationStore.paidOf(reservation);
+        lines.add(String.format("%-28s %10s", "Total Paid", money(paid)));
+        lines.add(String.format("%-28s %10s", "Remaining Balance", money(0)));
+        lines.add("");
+        lines.add("Payment Method(s):   " + paymentMethodsUsed());
+        lines.add("");
+        lines.add("Thank you for staying with Maplewood Grand.");
+
+        return lines;
+    }
+
+    private String paymentMethodsUsed() {
+        Set<String> methods = new LinkedHashSet<>();
+        for (Payment p : ReservationStore.paymentsFor(reservation.resNo)) {
+            methods.add(p.method);
+        }
+        return methods.isEmpty() ? "—" : String.join(", ", methods);
+    }
+
+    private void simulatePrint() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Maplewood Grand — Admin");
+        alert.setHeaderText("Sending to printer");
+        alert.setContentText("The final bill has been sent to the front desk printer.\n"
+                + "(Simulated for this prototype — no physical printer is connected.)");
+        alert.showAndWait();
+    }
+
+    private void simulateSavePdf(List<String> lines) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Save Final Bill");
+        chooser.setInitialFileName(reservation.resNo + "-final-bill.pdf");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF files", "*.pdf"));
+        Window window = table.getScene().getWindow();
+        File file = chooser.showSaveDialog(window);
+        if (file == null) {
+            return;
+        }
+        try {
+            SimplePdf.write(file, "Maplewood Grand — Final Bill " + reservation.resNo, lines);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Maplewood Grand — Admin");
+            alert.setHeaderText("Saved");
+            alert.setContentText("Final bill saved to:\n" + file.getAbsolutePath());
+            alert.showAndWait();
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Maplewood Grand — Admin");
+            alert.setHeaderText("Save failed");
+            alert.setContentText("Could not write the file:\n" + e.getMessage());
+            alert.showAndWait();
+        }
+    }
+
+    private void completeCheckout() {
         Reservation updated = new Reservation(
                 reservation.resNo, reservation.guest, reservation.phone,
-                reservation.checkIn, reservation.nights, reservation.qty,
-                reservation.roomType, "Checked-out", 0);
+                reservation.checkIn, reservation.nights, reservation.rooms, "Checked-out", 0);
         ReservationStore.replace(reservation, updated);
         ReservationStore.selected = updated;
+        reservation = updated;
 
         // Observer pattern: publish that this room type was freed — the waitlist reacts
         WaitlistStore.roomFreed(reservation.roomType);
@@ -179,9 +472,7 @@ public class AdminPaymentPage implements Initializable {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Maplewood Grand — Admin");
         alert.setHeaderText("Checked out — " + reservation.resNo);
-        alert.setContentText("Final bill generated for " + reservation.guest + ".\n"
-                + reservation.roomsText() + " freed — waitlist updated and availability notified.\n"
-                + "(Simulated for Milestone 1.)");
+        alert.setContentText("Guest successfully checked out.");
         alert.showAndWait();
 
         SceneNavigator.go(table, "admin-dashboard.fxml");

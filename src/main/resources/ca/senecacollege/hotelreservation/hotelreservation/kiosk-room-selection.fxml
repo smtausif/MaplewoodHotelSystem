@@ -3,6 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
@@ -24,9 +26,9 @@
 
     <Region styleClass="cream-overlay"/>
 
-    <VBox alignment="TOP_CENTER" spacing="12">
+    <VBox alignment="TOP_CENTER" spacing="10">
         <padding>
-            <Insets top="20" right="36" bottom="18" left="36"/>
+            <Insets top="18" right="36" bottom="16" left="36"/>
         </padding>
 
         <!-- ============ HEADER ============ -->
@@ -55,13 +57,14 @@
         </StackPane>
 
         <!-- ============ TITLE ============ -->
-        <Label text="SELECT YOUR ROOM" styleClass="page-title"/>
+        <Label text="SELECT YOUR ROOMS" styleClass="page-title"/>
+        <Label text="Step 4 of 6 — choose one or more room types and set a quantity for each" styleClass="step-label"/>
 
         <!-- ============ ROOM CARDS ============ -->
         <HBox alignment="CENTER" spacing="16">
 
-            <VBox fx:id="doubleCard" styleClass="room-card" prefWidth="220" spacing="8" alignment="TOP_CENTER">
-                <ImageView fitWidth="192" fitHeight="126" preserveRatio="false">
+            <VBox fx:id="doubleCard" styleClass="room-card" prefWidth="220" spacing="6" alignment="TOP_CENTER">
+                <ImageView fitWidth="192" fitHeight="110" preserveRatio="false">
                     <image>
                         <Image url="@/double_room.jpg"/>
                     </image>
@@ -74,11 +77,15 @@
                     <Label fx:id="doublePrice" styleClass="price-label"/>
                     <Label text="/ night" styleClass="price-suffix"/>
                 </HBox>
-                <Button fx:id="doubleBtn" text="SELECT DOUBLE" onAction="#selectDouble" styleClass="select-btn"/>
+                <HBox alignment="CENTER" spacing="10">
+                    <Button text="−" onAction="#doubleMinus" styleClass="stepper-btn"/>
+                    <Label fx:id="doubleQty" text="0" styleClass="count-label"/>
+                    <Button text="+" onAction="#doublePlus" styleClass="stepper-btn"/>
+                </HBox>
             </VBox>
 
-            <VBox fx:id="singleCard" styleClass="room-card" prefWidth="220" spacing="8" alignment="TOP_CENTER">
-                <ImageView fitWidth="192" fitHeight="126" preserveRatio="false">
+            <VBox fx:id="singleCard" styleClass="room-card" prefWidth="220" spacing="6" alignment="TOP_CENTER">
+                <ImageView fitWidth="192" fitHeight="110" preserveRatio="false">
                     <image>
                         <Image url="@/single_room.jpg"/>
                     </image>
@@ -91,11 +98,15 @@
                     <Label fx:id="singlePrice" styleClass="price-label"/>
                     <Label text="/ night" styleClass="price-suffix"/>
                 </HBox>
-                <Button fx:id="singleBtn" text="SELECT SINGLE" onAction="#selectSingle" styleClass="select-btn"/>
+                <HBox alignment="CENTER" spacing="10">
+                    <Button text="−" onAction="#singleMinus" styleClass="stepper-btn"/>
+                    <Label fx:id="singleQty" text="0" styleClass="count-label"/>
+                    <Button text="+" onAction="#singlePlus" styleClass="stepper-btn"/>
+                </HBox>
             </VBox>
 
-            <VBox fx:id="deluxeCard" styleClass="room-card" prefWidth="220" spacing="8" alignment="TOP_CENTER">
-                <ImageView fitWidth="192" fitHeight="126" preserveRatio="false">
+            <VBox fx:id="deluxeCard" styleClass="room-card" prefWidth="220" spacing="6" alignment="TOP_CENTER">
+                <ImageView fitWidth="192" fitHeight="110" preserveRatio="false">
                     <image>
                         <Image url="@/delux-room.jpg"/>
                     </image>
@@ -108,11 +119,15 @@
                     <Label fx:id="deluxePrice" styleClass="price-label"/>
                     <Label text="/ night" styleClass="price-suffix"/>
                 </HBox>
-                <Button fx:id="deluxeBtn" text="SELECT DELUXE" onAction="#selectDeluxe" styleClass="select-btn"/>
+                <HBox alignment="CENTER" spacing="10">
+                    <Button text="−" onAction="#deluxeMinus" styleClass="stepper-btn"/>
+                    <Label fx:id="deluxeQty" text="0" styleClass="count-label"/>
+                    <Button text="+" onAction="#deluxePlus" styleClass="stepper-btn"/>
+                </HBox>
             </VBox>
 
-            <VBox fx:id="penthouseCard" styleClass="room-card" prefWidth="220" spacing="8" alignment="TOP_CENTER">
-                <ImageView fitWidth="192" fitHeight="126" preserveRatio="false">
+            <VBox fx:id="penthouseCard" styleClass="room-card" prefWidth="220" spacing="6" alignment="TOP_CENTER">
+                <ImageView fitWidth="192" fitHeight="110" preserveRatio="false">
                     <image>
                         <Image url="@/pent_house.jpg"/>
                     </image>
@@ -125,32 +140,51 @@
                     <Label fx:id="penthousePrice" styleClass="price-label"/>
                     <Label text="/ night" styleClass="price-suffix"/>
                 </HBox>
-                <Button fx:id="penthouseBtn" text="SELECT PENTHOUSE" onAction="#selectPenthouse" styleClass="select-btn"/>
+                <HBox alignment="CENTER" spacing="10">
+                    <Button text="−" onAction="#penthouseMinus" styleClass="stepper-btn"/>
+                    <Label fx:id="penthouseQty" text="0" styleClass="count-label"/>
+                    <Button text="+" onAction="#penthousePlus" styleClass="stepper-btn"/>
+                </HBox>
             </VBox>
         </HBox>
 
-        <!-- ============ QUANTITY + NOTE ============ -->
+        <!-- ============ RESERVATION SUMMARY ============ -->
         <VBox styleClass="panel-card" maxWidth="936" spacing="10">
             <padding>
                 <Insets top="14" right="20" bottom="14" left="20"/>
             </padding>
-            <HBox alignment="CENTER_LEFT" spacing="12">
-                <Label text="Quantity:" styleClass="row-label"/>
-                <Button text="−" onAction="#qtyMinus" styleClass="stepper-btn"/>
-                <Label fx:id="qtyLabel" text="1" styleClass="count-label"/>
-                <Button text="+" onAction="#qtyPlus" styleClass="stepper-btn"/>
+
+            <Label text="RESERVATION SUMMARY" styleClass="card-title"/>
+
+            <TableView fx:id="summaryTable" prefHeight="140" maxHeight="140">
+                <columns>
+                    <TableColumn fx:id="typeCol" text="Room Type" prefWidth="300"/>
+                    <TableColumn fx:id="qtyCol" text="Quantity" prefWidth="150"/>
+                    <TableColumn fx:id="rateCol" text="Price / Night" prefWidth="190"/>
+                    <TableColumn fx:id="subtotalCol" text="Subtotal" prefWidth="190"/>
+                </columns>
+                <placeholder>
+                    <Label text="No rooms selected yet — use the + / − buttons above to add some."
+                           styleClass="row-sublabel"/>
+                </placeholder>
+            </TableView>
+
+            <HBox alignment="CENTER_LEFT" spacing="14">
+                <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="170">
+                    <Label text="TOTAL ROOMS" styleClass="stat-title"/>
+                    <Label fx:id="totalRoomsValue" text="0" styleClass="stat-value"/>
+                </VBox>
+                <VBox styleClass="stat-chip" alignment="CENTER" prefWidth="200">
+                    <Label text="TOTAL PRICE" styleClass="stat-title"/>
+                    <Label fx:id="totalPriceValue" text="0.00" styleClass="stat-value"/>
+                </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Label fx:id="selectionLabel" text="No room selected yet" styleClass="row-sublabel"/>
+                <Label text="Availability will be confirmed at the next step." styleClass="note-label" wrapText="true"/>
             </HBox>
-            <Label text="Note: The quantity applies to your selected room type. Availability will be confirmed at the next step."
-                   styleClass="note-label" wrapText="true"/>
         </VBox>
 
         <!-- ============ BACK / NEXT ============ -->
         <HBox alignment="CENTER" maxWidth="936">
-            <VBox.margin>
-                <Insets top="8"/>
-            </VBox.margin>
             <Button text="BACK" onAction="#onBack" styleClass="back-nav-button"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="NEXT: ADD-ONS" onAction="#onNext" styleClass="next-button"/>

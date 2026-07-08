@@ -31,6 +31,29 @@
     -fx-fill: #c5a059;
 }
 
+.dark-icon {
+    -fx-fill: #2b2b2b;
+}
+
+.admin-login-button {
+    -fx-background-color: linear-gradient(to bottom, #eec368, #c99e3e);
+    -fx-background-radius: 12;
+    -fx-text-fill: #2b2b2b;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(180, 140, 50, 0.55), 12, 0.2, 0, 4);
+}
+
+.admin-login-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #f3cd77, #d2a747);
+}
+
+.admin-login-button:pressed {
+    -fx-background-color: linear-gradient(to bottom, #dcb254, #b78e35);
+}
+
 .clock-label {
     -fx-font-size: 30px;
     -fx-font-weight: bold;
@@ -158,6 +181,31 @@
 .footer-label {
     -fx-font-size: 14px;
     -fx-text-fill: #8d8880;
+}
+
+/* ---------- trust / rating ---------- */
+
+.rating-stars {
+    -fx-font-size: 24px;
+    -fx-text-fill: #c5a059;
+}
+
+.rating-score {
+    -fx-font-family: "Playfair Display", "Georgia", "Times New Roman", serif;
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #14213d;
+}
+
+.review-count-label {
+    -fx-font-size: 15px;
+    -fx-text-fill: #6f6a62;
+}
+
+.rating-picker-star {
+    -fx-font-size: 32px;
+    -fx-text-fill: #c5a059;
+    -fx-cursor: hand;
 }
 
 /* ============ Page 2: Plan Your Stay ============ */
@@ -447,6 +495,24 @@
     -fx-background-color: white;
 }
 
+.loyalty-radio {
+    -fx-font-size: 17px;
+    -fx-text-fill: #2b2b2b;
+    -fx-cursor: hand;
+}
+
+.loyalty-radio .radio {
+    -fx-background-color: white;
+    -fx-background-radius: 100;
+    -fx-border-color: #b9b2a3;
+    -fx-border-radius: 100;
+    -fx-padding: 5px;
+}
+
+.loyalty-radio:selected .radio .dot {
+    -fx-background-color: #c5a059;
+}
+
 .thin-separator {
     -fx-background-color: #ddd6c6;
 }
@@ -496,6 +562,11 @@
     -fx-text-fill: #b0413e;
 }
 
+.field-error {
+    -fx-font-size: 13.5px;
+    -fx-text-fill: #b0413e;
+}
+
 .estimate-line {
     -fx-font-size: 17px;
     -fx-text-fill: #2b2b2b;
@@ -510,6 +581,19 @@
     -fx-font-size: 22px;
     -fx-font-weight: bold;
     -fx-text-fill: #1c1c1c;
+}
+
+.clear-scroll, .clear-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.clear-scroll > .scroll-bar:vertical {
+    -fx-pref-width: 10;
+}
+
+.clear-scroll > .scroll-bar:vertical .thumb {
+    -fx-background-color: #d8cdb8;
+    -fx-background-radius: 6;
 }
 
 .total-amount {
