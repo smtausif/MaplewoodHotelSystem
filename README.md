@@ -95,6 +95,18 @@ src/main/resources/
 └── lobby-video.mp4                  # optional welcome-screen video
 ```
 
+## Design Diagrams
+
+| Diagram | File | Description |
+|---------|------|-------------|
+| Class Diagram | [`docs/class-diagram.pdf`](docs/class-diagram.pdf) | UML class diagram showing model, session, and controller relationships |
+| Entity-Relationship Diagram | [`docs/schema.drawio`](docs/schema.drawio) | ERD for the hotel database schema (open with [draw.io](https://app.diagrams.net)) |
+| ERD Preview | [`docs/schema.jpg`](docs/schema.jpg) | PNG preview of the ERD |
+
+![ERD](docs/schema.jpg)
+
+---
+
 ## Architecture Notes
 
 - **Navigation** — `SceneNavigator.go(node, "page.fxml")` swaps the scene root in place, so the window keeps its size and position while moving between screens.
