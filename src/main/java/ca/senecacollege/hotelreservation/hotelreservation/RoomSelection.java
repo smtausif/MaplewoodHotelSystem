@@ -9,10 +9,16 @@ public class RoomSelection {
 
     private final RoomType roomType;
     private int quantity;
+    private final PricingStrategy pricingStrategy;
 
     public RoomSelection(RoomType roomType, int quantity) {
+        this(roomType, quantity, new StandardPricingStrategy());
+    }
+
+    public RoomSelection(RoomType roomType, int quantity, PricingStrategy pricingStrategy) {
         this.roomType = roomType;
         this.quantity = quantity;
+        this.pricingStrategy = pricingStrategy;
     }
 
     public RoomType roomType() {
@@ -28,6 +34,6 @@ public class RoomSelection {
     }
 
     public double subtotal(long nights) {
-        return (double) roomType.pricePerNight() * quantity * nights;
+        return pricingStrategy.calculatePrice(roomType, quantity, nights);
     }
 }
