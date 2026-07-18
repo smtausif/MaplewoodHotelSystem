@@ -277,7 +277,7 @@ public class AdminReservationDetailPage implements Initializable {
         }
         List<RoomSelection> result = new ArrayList<>();
         for (Map.Entry<RoomType, Integer> entry : counts.entrySet()) {
-            result.add(new RoomSelection(entry.getKey(), entry.getValue()));
+            result.add(RoomFactory.createRoomSelection(entry.getKey(), entry.getValue()));
         }
         return result;
     }

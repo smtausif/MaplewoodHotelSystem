@@ -25,7 +25,7 @@ public class Reservation {
     public Reservation(String resNo, String guest, String phone, LocalDate checkIn,
                        int nights, int qty, String roomType, String status, double balance) {
         this(resNo, guest, phone, checkIn, nights,
-                List.of(new RoomSelection(RoomType.fromShortName(roomType), qty)),
+                List.of(RoomFactory.createRoomSelection(roomType, qty)),
                 status, balance);
     }
 
