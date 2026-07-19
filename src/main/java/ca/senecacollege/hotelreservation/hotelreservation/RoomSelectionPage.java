@@ -137,7 +137,7 @@ public class RoomSelectionPage implements Initializable {
         for (RoomType type : RoomType.values()) {
             int qty = quantities.getOrDefault(type, 0);
             if (qty > 0) {
-                RoomSelection selection = new RoomSelection(type, qty);
+                RoomSelection selection = RoomFactory.createRoomSelection(type, qty);
                 summaryRows.add(selection);
                 totalRooms += qty;
                 totalPrice += selection.subtotal(nights);
@@ -200,7 +200,7 @@ public class RoomSelectionPage implements Initializable {
         for (RoomType type : RoomType.values()) {
             int qty = quantities.getOrDefault(type, 0);
             if (qty > 0) {
-                BookingSession.selectedRooms.add(new RoomSelection(type, qty));
+                BookingSession.selectedRooms.add(RoomFactory.createRoomSelection(type, qty));
             }
         }
         SceneNavigator.go(clockLabel, "kiosk-addons.fxml");
