@@ -26,9 +26,25 @@ public class ConfirmationPage implements Initializable {
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.ENGLISH);
 
+    /** Guards against saving the same booking twice if this controller's scene re-initialises. */
+    private boolean bookingPersisted = false;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         startClock();
+
+        // Data tier (Person A): persist the completed booking to the database. This is the
+        // "kiosk path saves the reservation" step — after this the reservation is in H2 and
+        // shows up on the admin dashboard. Billing itself is still handled at the front desk.
+        if (!bookingPersisted && !BookingSession.selectedRooms.isEmpty()) {
+            try {
+                ReservationStore.saveKioskBooking();
+                bookingPersisted = true;
+            } catch (RuntimeException ex) {
+                System.err.println("[ConfirmationPage] Could not persist the booking:");
+                ex.printStackTrace();
+            }
+        }
 
         // "Thank you, Amara!" — first name only
         String firstName = BookingSession.guest.getFirstName();

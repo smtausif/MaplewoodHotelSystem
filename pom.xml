@@ -12,6 +12,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.12.1</junit.version>
+        <hibernate.version>6.6.4.Final</hibernate.version>
+        <h2.version>2.3.232</h2.version>
     </properties>
 
     <dependencies>
@@ -29,6 +31,22 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-media</artifactId>
             <version>21.0.6</version>
+        </dependency>
+
+        <!-- ============ Data tier: Hibernate (JPA provider) + H2 (Person A) ============ -->
+        <!-- Hibernate ORM is our JPA implementation; it transitively brings in the
+             jakarta.persistence API, Byte Buddy, ANTLR, JBoss Logging, etc. -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
+        <!-- H2: embedded, file-based relational database -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

@@ -37,3 +37,10 @@ build/
 
 ### Mac OS ###
 .DS_Store
+### H2 database (Person A) ###
+data/
+*.trace.db
+*.lock.db
+
+### Rotating application logs ###
+system_logs*.log
