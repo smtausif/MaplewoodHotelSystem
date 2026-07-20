@@ -5,11 +5,14 @@ import ca.senecacollege.hotelreservation.hotelreservation.model.AdminUser;
 import ca.senecacollege.hotelreservation.hotelreservation.model.Addon;
 import ca.senecacollege.hotelreservation.hotelreservation.model.Billing;
 import ca.senecacollege.hotelreservation.hotelreservation.model.Guest;
+import ca.senecacollege.hotelreservation.hotelreservation.model.LoyaltyAccount;
+import ca.senecacollege.hotelreservation.hotelreservation.model.LoyaltyTransaction;
 import ca.senecacollege.hotelreservation.hotelreservation.model.Payment;
 import ca.senecacollege.hotelreservation.hotelreservation.model.Reservation;
 import ca.senecacollege.hotelreservation.hotelreservation.model.ReservationRoom;
 import ca.senecacollege.hotelreservation.hotelreservation.model.Room;
 import ca.senecacollege.hotelreservation.hotelreservation.model.RoomTypeEntity;
+import ca.senecacollege.hotelreservation.hotelreservation.model.Waitlist;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import org.mindrot.jbcrypt.BCrypt;
@@ -17,6 +20,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +55,8 @@ public final class DataSeeder {
             seedAddons(em);
             Map<String, AdminUser> admins = seedAdmins(em);
             seedReservations(em, types, roomsByType, admins);
+            seedLoyalty(em);
+            seedWaitlist(em, types);
             tx.commit();
             System.out.println("[DataSeeder] Database seeded with reference and sample data.");
         } catch (RuntimeException ex) {
@@ -224,6 +230,89 @@ public final class DataSeeder {
         reservation.setBilling(billing);
         em.persist(billing);
         return reservation;
+    }
+
+    /* ---------- loyalty ---------- */
+
+    private static void seedLoyalty(EntityManager em) {
+        Guest john = new Guest("John", "Smith", null, "john.smith@example.com");
+        em.persist(john);
+        LoyaltyAccount johnAccount = new LoyaltyAccount(john, "MPL-RW-1075", "Gold");
+        em.persist(johnAccount);
+        addLoyaltyTxn(em, johnAccount, "Earn", 2850, null, LocalDateTime.of(2026, 1, 12, 0, 0));
+
+        // Amara's and Priya's guests already exist from seedReservations (MPL-4471, MPL-4462).
+        Guest amara = findGuestByFullName(em, "Amara", "Okafor");
+        LoyaltyAccount amaraAccount = new LoyaltyAccount(amara, "MPL-RW-8842", "Platinum");
+        em.persist(amaraAccount);
+        addLoyaltyTxn(em, amaraAccount, "Earn", 2512, null, LocalDateTime.of(2025, 11, 1, 0, 0));
+        addLoyaltyTxn(em, amaraAccount, "Earn", 1093, findReservationByCode(em, "MPL-4471"),
+                LocalDateTime.of(2026, 7, 10, 0, 0));
+        addLoyaltyTxn(em, amaraAccount, "Redeem", -2000, findReservationByCode(em, "MPL-4402"),
+                LocalDateTime.of(2026, 6, 2, 0, 0));
+        addLoyaltyTxn(em, amaraAccount, "Earn", 845, findReservationByCode(em, "MPL-4388"),
+                LocalDateTime.of(2026, 5, 18, 0, 0));
+
+        Guest priya = findGuestByFullName(em, "Priya", "Sharma");
+        LoyaltyAccount priyaAccount = new LoyaltyAccount(priya, "MPL-RW-3204", "Silver");
+        em.persist(priyaAccount);
+        addLoyaltyTxn(em, priyaAccount, "Earn", 640, findReservationByCode(em, "MPL-4462"),
+                LocalDateTime.of(2026, 6, 28, 0, 0));
+    }
+
+    /* ---------- waitlist ---------- */
+
+    private static void seedWaitlist(EntityManager em, Map<String, RoomTypeEntity> types) {
+        // Sofia Rossi already exists as a guest from seedReservations (MPL-4450).
+        Guest sofia = findGuestByFullName(em, "Sofia", "Rossi");
+        seedWaitlistRow(em, sofia, types.get("Deluxe"), LocalDate.of(2026, 7, 12), LocalDate.of(2026, 7, 15),
+                1, "Room free now", "301", LocalDateTime.of(2026, 7, 1, 0, 0));
+
+        Guest patelFamily = guestFrom(em, "Patel family", null);
+        seedWaitlistRow(em, patelFamily, types.get("Double"), LocalDate.of(2026, 7, 14), LocalDate.of(2026, 7, 18),
+                2, "Room free now", null, LocalDateTime.of(2026, 7, 2, 0, 0));
+
+        Guest george = guestFrom(em, "George Lin", null);
+        seedWaitlistRow(em, george, types.get("Penthouse"), LocalDate.of(2026, 7, 20), LocalDate.of(2026, 7, 22),
+                1, "Waiting", "502", LocalDateTime.of(2026, 7, 2, 0, 0));
+
+        Guest hana = guestFrom(em, "Hana Kim", null);
+        seedWaitlistRow(em, hana, types.get("Single"), LocalDate.of(2026, 7, 9), LocalDate.of(2026, 7, 11),
+                1, "Waiting", "415", LocalDateTime.of(2026, 7, 3, 0, 0));
+    }
+
+    private static void seedWaitlistRow(EntityManager em, Guest guest, RoomTypeEntity roomType,
+                                         LocalDate checkIn, LocalDate checkOut, int quantity,
+                                         String status, String preferredRoomNumber, LocalDateTime createdAt) {
+        Waitlist w = new Waitlist(guest, roomType, checkIn, checkOut);
+        w.setQuantity(quantity);
+        w.setStatus(status);
+        w.setPreferredRoomNumber(preferredRoomNumber);
+        w.setCreatedAt(createdAt);
+        em.persist(w);
+    }
+
+    private static void addLoyaltyTxn(EntityManager em, LoyaltyAccount account, String type, int points,
+                                      Reservation reservation, LocalDateTime createdAt) {
+        LoyaltyTransaction txn = new LoyaltyTransaction(type, points, reservation);
+        txn.setCreatedAt(createdAt);
+        account.addTransaction(txn);
+        em.persist(txn);
+    }
+
+    private static Guest findGuestByFullName(EntityManager em, String firstName, String lastName) {
+        return em.createQuery(
+                        "select g from Guest g where g.firstName = :f and g.lastName = :l", Guest.class)
+                .setParameter("f", firstName)
+                .setParameter("l", lastName)
+                .getResultStream().findFirst()
+                .orElseThrow(() -> new IllegalStateException("Guest not seeded: " + firstName + " " + lastName));
+    }
+
+    private static Reservation findReservationByCode(EntityManager em, String code) {
+        return em.createQuery("select r from Reservation r where r.code = :code", Reservation.class)
+                .setParameter("code", code)
+                .getResultStream().findFirst().orElse(null);
     }
 
     private static Guest guestFrom(EntityManager em, String fullName, String phone) {

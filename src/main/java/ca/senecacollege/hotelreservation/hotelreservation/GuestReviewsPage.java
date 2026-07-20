@@ -1,5 +1,6 @@
 package ca.senecacollege.hotelreservation.hotelreservation;
 
+import ca.senecacollege.hotelreservation.hotelreservation.repository.FeedbackRepository;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -17,6 +18,8 @@ import javafx.util.Duration;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -24,8 +27,12 @@ public class GuestReviewsPage implements Initializable {
 
     @FXML private Label clockLabel;
     @FXML private Label dateLabel;
+    @FXML private Label ratingStarsLabel;
+    @FXML private Label avgRatingLabel;
     @FXML private Label reviewCountLabel;
     @FXML private VBox reviewList;
+
+    private final FeedbackRepository feedbackRepository = new FeedbackRepository();
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.ENGLISH);
@@ -35,13 +42,44 @@ public class GuestReviewsPage implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         startClock();
 
-        int count = FeedbackStore.all().size();
+        List<FeedbackEntry> allFeedback = loadFeedback();
+
+        int count = allFeedback.size();
         reviewCountLabel.setText(count + " Total Review" + (count == 1 ? "" : "s"));
+        updateAverageRating(allFeedback);
 
         reviewList.getChildren().clear();
-        for (FeedbackEntry entry : FeedbackStore.all()) {
+        for (FeedbackEntry entry : allFeedback) {
             reviewList.getChildren().add(reviewCard(entry));
         }
+    }
+
+    /* ---------- average rating ---------- */
+
+    private void updateAverageRating(List<FeedbackEntry> allFeedback) {
+        if (allFeedback.isEmpty()) {
+            ratingStarsLabel.setText("☆☆☆☆☆");
+            avgRatingLabel.setText("No ratings yet");
+            return;
+        }
+        double sum = 0;
+        for (FeedbackEntry f : allFeedback) {
+            sum += f.rating;
+        }
+        double average = sum / allFeedback.size();
+        int roundedStars = (int) Math.round(average);
+        ratingStarsLabel.setText("★".repeat(roundedStars) + "☆".repeat(5 - roundedStars));
+        avgRatingLabel.setText(String.format("%.1f / 5", average));
+    }
+
+    /* ---------- loading ---------- */
+
+    private List<FeedbackEntry> loadFeedback() {
+        List<FeedbackEntry> list = new ArrayList<>();
+        for (var entity : feedbackRepository.findAllNewestFirst()) {
+            list.add(FeedbackEntry.from(entity));
+        }
+        return list;
     }
 
     /* ---------- clock ---------- */

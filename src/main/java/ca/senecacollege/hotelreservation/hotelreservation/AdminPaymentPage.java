@@ -1,5 +1,12 @@
 package ca.senecacollege.hotelreservation.hotelreservation;
 
+import ca.senecacollege.hotelreservation.hotelreservation.model.LoyaltyAccount;
+import ca.senecacollege.hotelreservation.hotelreservation.model.LoyaltyTransaction;
+import ca.senecacollege.hotelreservation.hotelreservation.persistence.JpaUtil;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.LoyaltyAccountRepository;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.LoyaltyTransactionRepository;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.WaitlistRepository;
+import jakarta.persistence.EntityManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -63,11 +70,15 @@ public class AdminPaymentPage implements Initializable {
     @FXML private Label loyaltyDiscountValue;
     @FXML private Label loyaltyRedeemedValue;
 
+    private final LoyaltyAccountRepository loyaltyAccountRepository = new LoyaltyAccountRepository();
+    private final LoyaltyTransactionRepository loyaltyTransactionRepository = new LoyaltyTransactionRepository();
+    private final WaitlistRepository waitlistRepository = new WaitlistRepository();
+
     private Reservation reservation;
     private double balance = 0;
 
     /** Set only if this reservation's guest matches a demo loyalty member. */
-    private LoyaltyMember loyaltyMember;
+    private LoyaltyAccount loyaltyMember;
 
     private static final DateTimeFormatter DAY_FMT = DateTimeFormatter.ofPattern("dd MMM", Locale.ENGLISH);
 
@@ -89,7 +100,7 @@ public class AdminPaymentPage implements Initializable {
         statusChip.setText(reservation.status.toUpperCase());
 
         // loyalty — only enabled if this reservation's guest matches a demo loyalty member
-        loyaltyMember = LoyaltyStore.findByGuestName(reservation.guest).orElse(null);
+        loyaltyMember = loyaltyAccountRepository.findByGuestFullName(reservation.guest).orElse(null);
         redeemPointsButton.setDisable(loyaltyMember == null);
 
         // combos
@@ -146,8 +157,9 @@ public class AdminPaymentPage implements Initializable {
         }
 
         if (loyaltyMember != null) {
-            int redeemedPoints = LoyaltyStore.redeemedOnReservation(loyaltyMember.memberId(), reservation.resNo);
-            double discountValue = redeemedPoints / (double) LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED;
+            Long reservationId = findReservationIdByCode(reservation.resNo);
+            int redeemedPoints = loyaltyTransactionRepository.redeemedOnReservation(loyaltyMember.getId(), reservationId);
+            double discountValue = redeemedPoints / (double) LoyaltyTransactionRepository.POINTS_PER_DOLLAR_REDEEMED;
             loyaltyDiscountValue.setText(discountValue > 0 ? "-" + money(discountValue) : money(0));
             loyaltyRedeemedValue.setText(String.format("%,d", redeemedPoints) + " pts");
         } else {
@@ -204,9 +216,9 @@ public class AdminPaymentPage implements Initializable {
             return; // button is disabled in this case, but guard anyway
         }
 
-        int available = LoyaltyStore.balanceOf(loyaltyMember.memberId());
+        int available = loyaltyTransactionRepository.balanceOf(loyaltyMember.getId());
         if (available <= 0) {
-            warn("No points available", loyaltyMember.name() + " has no loyalty points available to redeem.");
+            warn("No points available", loyaltyMember.getGuest().fullName() + " has no loyalty points available to redeem.");
             return;
         }
         if (balance <= 0.004) {
@@ -216,9 +228,9 @@ public class AdminPaymentPage implements Initializable {
         }
 
         // options are capped so a redemption can never exceed points owned or the balance due
-        int maxByBalance = (int) Math.floor(balance) * LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED;
+        int maxByBalance = (int) Math.floor(balance) * LoyaltyTransactionRepository.POINTS_PER_DOLLAR_REDEEMED;
         int cap = Math.min(available, maxByBalance);
-        cap = Math.min(cap, LoyaltyStore.REDEEM_CAP_PER_RES);
+        cap = Math.min(cap, LoyaltyTransactionRepository.REDEEM_CAP_PER_RES);
         cap = (cap / 100) * 100; // keep the dollar value clean
 
         Map<String, Integer> options = new LinkedHashMap<>();
@@ -242,9 +254,21 @@ public class AdminPaymentPage implements Initializable {
         }
 
         int points = chosen.get();
-        double dollarValue = points / (double) LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED;
+        double dollarValue = points / (double) LoyaltyTransactionRepository.POINTS_PER_DOLLAR_REDEEMED;
 
-        LoyaltyStore.redeem(loyaltyMember.memberId(), points, reservation.resNo, staffName());
+        Long accountId = loyaltyMember.getId();
+        String resNo = reservation.resNo;
+        loyaltyTransactionRepository.createInTransaction(em -> {
+            LoyaltyAccount managed = em.find(LoyaltyAccount.class, accountId);
+            ca.senecacollege.hotelreservation.hotelreservation.model.Reservation reservationEntity = em.createQuery(
+                            "select r from Reservation r where r.code = :code",
+                            ca.senecacollege.hotelreservation.hotelreservation.model.Reservation.class)
+                    .setParameter("code", resNo)
+                    .getResultStream().findFirst().orElse(null);
+            LoyaltyTransaction txn = new LoyaltyTransaction("Redeem", -points, reservationEntity);
+            managed.addTransaction(txn);
+            return txn;
+        });
         ReservationStore.paymentsFor(reservation.resNo).add(new Payment(
                 LocalDate.now(), "Loyalty Discount", "Points", dollarValue, staffName()));
         refresh();
@@ -260,16 +284,16 @@ public class AdminPaymentPage implements Initializable {
     private Optional<Integer> showRedeemDialog(int available, Map<String, Integer> options) {
         Dialog<Integer> dialog = new Dialog<>();
         dialog.setTitle("Maplewood Grand — Admin");
-        dialog.setHeaderText("Redeem Loyalty Points — " + loyaltyMember.name());
+        dialog.setHeaderText("Redeem Loyalty Points — " + loyaltyMember.getGuest().fullName());
         dialog.getDialogPane().getStylesheets().add(getClass().getResource("kiosk.css").toExternalForm());
 
         VBox content = new VBox(10);
         content.getChildren().addAll(
-                infoRow("Member ID:", loyaltyMember.memberId()),
+                infoRow("Member ID:", loyaltyMember.getLoyaltyNumber()),
                 infoRow("Available Points:", String.format("%,d", available) + " pts"),
                 infoRow("Current Balance Due:", money(balance)),
                 infoRow("Conversion:", "1 point = "
-                        + money(1.0 / LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED) + " CAD")
+                        + money(1.0 / LoyaltyTransactionRepository.POINTS_PER_DOLLAR_REDEEMED) + " CAD")
         );
 
         ToggleGroup group = new ToggleGroup();
@@ -394,8 +418,9 @@ public class AdminPaymentPage implements Initializable {
         double tax = total - roomSubtotal;
 
         double loyaltyDiscount = loyaltyMember != null
-                ? LoyaltyStore.redeemedOnReservation(loyaltyMember.memberId(), reservation.resNo)
-                        / (double) LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED
+                ? loyaltyTransactionRepository.redeemedOnReservation(
+                        loyaltyMember.getId(), findReservationIdByCode(reservation.resNo))
+                        / (double) LoyaltyTransactionRepository.POINTS_PER_DOLLAR_REDEEMED
                 : 0;
         lines.add(String.format("%-28s %10s", "Discounts", money(0)));
         lines.add(String.format("%-28s %10s", "Loyalty Discount",
@@ -466,8 +491,10 @@ public class AdminPaymentPage implements Initializable {
         ReservationStore.selected = updated;
         reservation = updated;
 
-        // Observer pattern: publish that this room type was freed — the waitlist reacts
-        WaitlistStore.roomFreed(reservation.roomType);
+        // persist: any active "Waiting" entries for this room type flip to "Room free now"
+        waitlistRepository.markRoomFreed(reservation.roomType);
+        // Observer pattern: publish that this room type was freed — an open waitlist page reacts
+        WaitlistNotifier.publish(reservation.roomType);
 
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Maplewood Grand — Admin");
@@ -501,6 +528,19 @@ public class AdminPaymentPage implements Initializable {
 
     private String money(double v) {
         return (v < 0 ? "-" : "") + String.format("$%,.2f", Math.abs(v));
+    }
+
+    /** Looks up a reservation's database id by its human-facing code, or null if not found. */
+    private Long findReservationIdByCode(String code) {
+        EntityManager em = JpaUtil.createEntityManager();
+        try {
+            return em.createQuery(
+                            "select r.id from Reservation r where r.code = :code", Long.class)
+                    .setParameter("code", code)
+                    .getResultStream().findFirst().orElse(null);
+        } finally {
+            em.close();
+        }
     }
 
     private void warn(String header, String content) {

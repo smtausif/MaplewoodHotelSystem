@@ -1,5 +1,9 @@
 package ca.senecacollege.hotelreservation.hotelreservation;
 
+import ca.senecacollege.hotelreservation.hotelreservation.model.LoyaltyAccount;
+import ca.senecacollege.hotelreservation.hotelreservation.model.LoyaltyTransaction;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.LoyaltyAccountRepository;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.LoyaltyTransactionRepository;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -13,6 +17,7 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class ConfirmationPage implements Initializable {
@@ -38,8 +43,9 @@ public class ConfirmationPage implements Initializable {
         // shows up on the admin dashboard. Billing itself is still handled at the front desk.
         if (!bookingPersisted && !BookingSession.selectedRooms.isEmpty()) {
             try {
-                ReservationStore.saveKioskBooking();
+                Reservation saved = ReservationStore.saveKioskBooking();
                 bookingPersisted = true;
+                recordLoyaltyRedemptionIfAny(saved);
             } catch (RuntimeException ex) {
                 System.err.println("[ConfirmationPage] Could not persist the booking:");
                 ex.printStackTrace();
@@ -73,6 +79,39 @@ public class ConfirmationPage implements Initializable {
         // Confirmation code
         String code = BookingSession.confirmationCode;
         codeLineLabel.setText("Confirmation code: " + ((code != null && !code.isBlank()) ? code : "—"));
+    }
+
+    /* ---------- loyalty ---------- */
+
+    /**
+     * Posts the pending kiosk redemption to the member's ledger now that the reservation it's
+     * tied to actually exists in the database (redemption is chosen back on the guest-details
+     * step, but can't be recorded until the reservation it references has been saved here).
+     */
+    private void recordLoyaltyRedemptionIfAny(Reservation saved) {
+        if (BookingSession.loyaltyMemberId == null || BookingSession.loyaltyRedeemPoints <= 0) {
+            return;
+        }
+        LoyaltyAccountRepository loyaltyAccounts = new LoyaltyAccountRepository();
+        Optional<LoyaltyAccount> account = loyaltyAccounts.findByLoyaltyNumber(BookingSession.loyaltyMemberId);
+        if (account.isEmpty()) {
+            return;
+        }
+        Long accountId = account.get().getId();
+        int points = BookingSession.loyaltyRedeemPoints;
+        String resNo = saved.resNo;
+
+        new LoyaltyTransactionRepository().createInTransaction(em -> {
+            LoyaltyAccount managed = em.find(LoyaltyAccount.class, accountId);
+            ca.senecacollege.hotelreservation.hotelreservation.model.Reservation reservation = em.createQuery(
+                            "select r from Reservation r where r.code = :code",
+                            ca.senecacollege.hotelreservation.hotelreservation.model.Reservation.class)
+                    .setParameter("code", resNo)
+                    .getResultStream().findFirst().orElse(null);
+            LoyaltyTransaction txn = new LoyaltyTransaction("Redeem", -points, reservation);
+            managed.addTransaction(txn);
+            return txn;
+        });
     }
 
     /* ---------- clock ---------- */

@@ -1,5 +1,10 @@
 package ca.senecacollege.hotelreservation.hotelreservation;
 
+import ca.senecacollege.hotelreservation.hotelreservation.model.Guest;
+import ca.senecacollege.hotelreservation.hotelreservation.model.LoyaltyAccount;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.LoyaltyAccountRepository;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.LoyaltyTransactionRepository;
+import jakarta.persistence.EntityManager;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -43,6 +48,8 @@ public class GuestDetailsPage implements Initializable {
     @FXML private HBox lookupRow;
     @FXML private TextField memberLookupField;
     @FXML private Label lookupMessageLabel;
+    @FXML private VBox joinPromptBox;
+    @FXML private Label joinMessageLabel;
     @FXML private VBox memberFoundBox;
     @FXML private Label welcomeBackLabel;
     @FXML private Label memberTierValue;
@@ -55,8 +62,11 @@ public class GuestDetailsPage implements Initializable {
 
     private static final double TAX_RATE = 0.13; // Ontario HST
 
+    private final LoyaltyAccountRepository loyaltyAccountRepository = new LoyaltyAccountRepository();
+    private final LoyaltyTransactionRepository loyaltyTransactionRepository = new LoyaltyTransactionRepository();
+
     /** The looked-up loyalty member for this booking, or null if the guest isn't one. */
-    private LoyaltyMember loyaltyMember = null;
+    private LoyaltyAccount loyaltyMember = null;
     private int redeemPoints = 0;
     private final Map<String, Integer> redeemOptionPoints = new LinkedHashMap<>();
 
@@ -84,7 +94,7 @@ public class GuestDetailsPage implements Initializable {
             BookingSession.loyaltyRedeemPoints = redeemPoints;
             redeemBreakdownLabel.setText(redeemPoints > 0
                     ? "Redeeming " + String.format("%,d", redeemPoints) + " points → "
-                            + money(redeemPoints / (double) LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED) + " off"
+                            + money(redeemPoints / (double) LoyaltyTransactionRepository.POINTS_PER_DOLLAR_REDEEMED) + " off"
                     : "");
             recalcLoyalty();
         });
@@ -98,20 +108,24 @@ public class GuestDetailsPage implements Initializable {
     private void restoreLoyaltyState() {
         if (BookingSession.loyaltyMemberId == null) {
             memberNoRadio.setSelected(true);
+            joinPromptBox.setVisible(true);
+            joinPromptBox.setManaged(true);
             return;
         }
 
         memberYesRadio.setSelected(true);
         lookupRow.setVisible(true);
         lookupRow.setManaged(true);
+        joinPromptBox.setVisible(false);
+        joinPromptBox.setManaged(false);
 
-        loyaltyMember = LoyaltyStore.memberById(BookingSession.loyaltyMemberId).orElse(null);
+        loyaltyMember = loyaltyAccountRepository.findByLoyaltyNumber(BookingSession.loyaltyMemberId).orElse(null);
         if (loyaltyMember == null) {
             return;
         }
 
-        memberLookupField.setText(loyaltyMember.memberId());
-        showMemberFound();
+        memberLookupField.setText(loyaltyMember.getLoyaltyNumber());
+        showMemberFound("Welcome back, " + loyaltyMember.getGuest().fullName() + "!");
 
         if (BookingSession.loyaltyRedeemPoints > 0) {
             redeemCheck.setSelected(true);
@@ -148,7 +162,7 @@ public class GuestDetailsPage implements Initializable {
         double roomSubtotal = BookingSession.roomsSubtotal();
         double addons = BookingSession.addonsSubtotal;
         double discount = (loyaltyMember != null && redeemPoints > 0)
-                ? redeemPoints / (double) LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED
+                ? redeemPoints / (double) LoyaltyTransactionRepository.POINTS_PER_DOLLAR_REDEEMED
                 : 0;
         discount = Math.min(discount, roomSubtotal + addons);
         double taxable = Math.max(roomSubtotal + addons - discount, 0);
@@ -168,10 +182,13 @@ public class GuestDetailsPage implements Initializable {
         boolean isMember = memberYesRadio.isSelected();
         lookupRow.setVisible(isMember);
         lookupRow.setManaged(isMember);
+        joinPromptBox.setVisible(!isMember);
+        joinPromptBox.setManaged(!isMember);
         if (!isMember) {
             loyaltyMember = null;
             redeemPoints = 0;
             lookupMessageLabel.setText("");
+            joinMessageLabel.setText("");
             memberFoundBox.setVisible(false);
             memberFoundBox.setManaged(false);
             BookingSession.loyaltyMemberId = null;
@@ -193,25 +210,113 @@ public class GuestDetailsPage implements Initializable {
             return;
         }
 
-        // Milestone-1 prototype: simulates a successful lookup against demo data
-        loyaltyMember = LoyaltyStore.simulateLookup(input).orElse(null);
-        lookupMessageLabel.setText("");
+        loyaltyMember = loyaltyAccountRepository.findByLoyaltyNumberOrEmail(input).orElse(null);
         redeemPoints = 0;
         redeemCheck.setSelected(false);
         redeemOptionsRow.setVisible(false);
         redeemOptionsRow.setManaged(false);
-
-        BookingSession.loyaltyMemberId = loyaltyMember.memberId();
         BookingSession.loyaltyRedeemPoints = 0;
 
-        showMemberFound();
+        if (loyaltyMember == null) {
+            lookupMessageLabel.setText("Membership not found.");
+            memberFoundBox.setVisible(false);
+            memberFoundBox.setManaged(false);
+            BookingSession.loyaltyMemberId = null;
+            recalcLoyalty();
+            return;
+        }
+
+        lookupMessageLabel.setText("");
+        BookingSession.loyaltyMemberId = loyaltyMember.getLoyaltyNumber();
+
+        showMemberFound("Welcome back, " + loyaltyMember.getGuest().fullName() + "!");
         recalcLoyalty();
     }
 
-    private void showMemberFound() {
-        welcomeBackLabel.setText("Welcome back, " + loyaltyMember.name() + "!");
-        memberTierValue.setText(loyaltyMember.tier());
-        memberPointsValue.setText(String.format("%,d", LoyaltyStore.balanceOf(loyaltyMember.memberId())));
+    /* ---------- loyalty: join Maplewood Rewards ---------- */
+
+    @FXML
+    private void onJoinRewards() {
+        String firstName = textOf(firstNameField);
+        String lastName = textOf(lastNameField);
+        if (firstName.isEmpty() || lastName.isEmpty()) {
+            joinMessageLabel.setText("Please enter your first and last name above before joining.");
+            return;
+        }
+
+        String phone = textOf(phoneField);
+        String email = textOf(emailField);
+
+        // Someone might select "No" without realizing they're already enrolled — if this
+        // email already has an account, sign them into it instead of trying (and failing)
+        // to create a second one for the same guest.
+        if (!email.isEmpty()) {
+            LoyaltyAccount existing = loyaltyAccountRepository.findByGuestEmail(email).orElse(null);
+            if (existing != null) {
+                enterMemberFoundState(existing, "You're already enrolled! Welcome back, "
+                        + existing.getGuest().fullName() + ".");
+                return;
+            }
+        }
+
+        LoyaltyAccount account;
+        try {
+            account = loyaltyAccountRepository.enroll(em -> resolveGuest(em, firstName, lastName, phone, email));
+        } catch (RuntimeException ex) {
+            joinMessageLabel.setText("Something went wrong joining Maplewood Rewards. Please try again.");
+            return;
+        }
+
+        enterMemberFoundState(account, "You're enrolled! Your Membership ID is " + account.getLoyaltyNumber() + ".");
+
+        Alert success = new Alert(Alert.AlertType.INFORMATION);
+        success.setTitle("Maplewood Grand");
+        success.setHeaderText("Welcome to Maplewood Rewards!");
+        success.setContentText("Your membership ID is " + account.getLoyaltyNumber()
+                + ". You'll start earning points on this stay.");
+        success.showAndWait();
+    }
+
+    /** Reflects a found-or-created membership as if the guest had looked themselves up via "Yes". */
+    private void enterMemberFoundState(LoyaltyAccount account, String welcomeMessage) {
+        joinMessageLabel.setText("");
+        loyaltyMember = account;
+        redeemPoints = 0;
+        BookingSession.loyaltyMemberId = account.getLoyaltyNumber();
+        BookingSession.loyaltyRedeemPoints = 0;
+
+        memberYesRadio.setSelected(true);
+        lookupRow.setVisible(true);
+        lookupRow.setManaged(true);
+        memberLookupField.setText(account.getLoyaltyNumber());
+        lookupMessageLabel.setText("");
+        joinPromptBox.setVisible(false);
+        joinPromptBox.setManaged(false);
+
+        showMemberFound(welcomeMessage);
+        recalcLoyalty();
+    }
+
+    /** Finds an existing guest by email, or creates a new one from the typed details. */
+    private Guest resolveGuest(EntityManager em, String firstName, String lastName, String phone, String email) {
+        if (!email.isEmpty()) {
+            var existing = em.createQuery(
+                            "select g from Guest g where lower(g.email) = lower(:email)", Guest.class)
+                    .setParameter("email", email)
+                    .getResultList();
+            if (!existing.isEmpty()) {
+                return existing.get(0);
+            }
+        }
+        Guest guest = new Guest(firstName, lastName, phone.isEmpty() ? null : phone, email.isEmpty() ? null : email);
+        em.persist(guest);
+        return guest;
+    }
+
+    private void showMemberFound(String welcomeMessage) {
+        welcomeBackLabel.setText(welcomeMessage);
+        memberTierValue.setText(loyaltyMember.getTier());
+        memberPointsValue.setText(String.format("%,d", loyaltyTransactionRepository.balanceOf(loyaltyMember.getId())));
         memberFoundBox.setVisible(true);
         memberFoundBox.setManaged(true);
     }
@@ -237,11 +342,11 @@ public class GuestDetailsPage implements Initializable {
             return;
         }
 
-        int available = LoyaltyStore.balanceOf(loyaltyMember.memberId());
+        int available = loyaltyTransactionRepository.balanceOf(loyaltyMember.getId());
         double subtotalBeforeDiscount = BookingSession.roomsSubtotal() + BookingSession.addonsSubtotal;
-        int maxByTotal = (int) Math.floor(subtotalBeforeDiscount) * LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED;
+        int maxByTotal = (int) Math.floor(subtotalBeforeDiscount) * LoyaltyTransactionRepository.POINTS_PER_DOLLAR_REDEEMED;
         int cap = Math.min(available, maxByTotal);
-        cap = Math.min(cap, LoyaltyStore.REDEEM_CAP_PER_RES);
+        cap = Math.min(cap, LoyaltyTransactionRepository.REDEEM_CAP_PER_RES);
         cap = (cap / 100) * 100; // keep the dollar value clean
 
         for (int tier : new int[]{500, 1000, 2000}) {

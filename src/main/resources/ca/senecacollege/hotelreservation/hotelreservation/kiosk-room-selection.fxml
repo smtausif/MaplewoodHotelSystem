@@ -18,12 +18,6 @@
            prefWidth="1024" prefHeight="768"
            styleClass="root-pane" stylesheets="@kiosk.css">
 
-    <ImageView fitWidth="1024" fitHeight="768" preserveRatio="false" opacity="0.3">
-        <image>
-            <Image url="@/lobby-background.jpg"/>
-        </image>
-    </ImageView>
-
     <Region styleClass="cream-overlay"/>
 
     <VBox alignment="TOP_CENTER" spacing="10">

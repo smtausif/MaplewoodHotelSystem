@@ -18,6 +18,8 @@
            prefWidth="1024" prefHeight="768"
            styleClass="root-pane" stylesheets="@kiosk.css">
 
+    <Region styleClass="cream-overlay"/>
+
     <VBox spacing="12">
         <padding>
             <Insets top="22" right="30" bottom="20" left="30"/>

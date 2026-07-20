@@ -36,6 +36,18 @@ public class Waitlist {
     @Column(name = "active", nullable = false)
     private boolean active = true;
 
+    /** How many rooms of this type the guest needs. */
+    @Column(name = "quantity", nullable = false)
+    private int quantity = 1;
+
+    /** "Waiting", "Room free now", or "Notified". */
+    @Column(name = "status", nullable = false, length = 20)
+    private String status = "Waiting";
+
+    /** A specific room number the guest asked for, or null if they have no preference. */
+    @Column(name = "preferred_room_number", length = 10)
+    private String preferredRoomNumber;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -87,6 +99,30 @@ public class Waitlist {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getPreferredRoomNumber() {
+        return preferredRoomNumber;
+    }
+
+    public void setPreferredRoomNumber(String preferredRoomNumber) {
+        this.preferredRoomNumber = preferredRoomNumber;
     }
 
     public LocalDateTime getCreatedAt() {

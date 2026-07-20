@@ -1,11 +1,17 @@
 package ca.senecacollege.hotelreservation.hotelreservation;
 
+import ca.senecacollege.hotelreservation.hotelreservation.model.Waitlist;
+
 import java.time.LocalDate;
 
 /**
- * One guest waiting for a room type to become available.
+ * One guest waiting for a room type to become available. Presentation-tier view of a
+ * database-backed {@link Waitlist} entity, built via {@link #from(Waitlist)}.
  */
 public class WaitlistEntry {
+
+    /** The underlying database row's id — needed to convert/notify/remove this entry. */
+    public final Long id;
 
     public final String guest;
     public final String roomType;   // "Single", "Double", "Deluxe", "Penthouse"
@@ -18,11 +24,12 @@ public class WaitlistEntry {
     public final String preferredRoomNumber;
 
     /** "Waiting", "Room free now", "Notified" */
-    public String status;
+    public final String status;
 
-    public WaitlistEntry(String guest, String roomType, int qty,
+    public WaitlistEntry(Long id, String guest, String roomType, int qty,
                          LocalDate desiredFrom, LocalDate desiredTo,
                          LocalDate requested, String status, String preferredRoomNumber) {
+        this.id = id;
         this.guest = guest;
         this.roomType = roomType;
         this.qty = qty;
@@ -40,5 +47,12 @@ public class WaitlistEntry {
     /** "Any" if the guest has no room preference. */
     public String preferredRoomText() {
         return (preferredRoomNumber == null || preferredRoomNumber.isBlank()) ? "Any" : preferredRoomNumber;
+    }
+
+    /** Maps a persisted {@link Waitlist} entity to its presentation-tier view. */
+    public static WaitlistEntry from(Waitlist entity) {
+        return new WaitlistEntry(entity.getId(), entity.getGuest().fullName(), entity.getRoomType().getName(),
+                entity.getQuantity(), entity.getDesiredCheckIn(), entity.getDesiredCheckOut(),
+                entity.getCreatedAt().toLocalDate(), entity.getStatus(), entity.getPreferredRoomNumber());
     }
 }

@@ -1,9 +1,12 @@
 package ca.senecacollege.hotelreservation.hotelreservation;
 
+import ca.senecacollege.hotelreservation.hotelreservation.model.Feedback;
+
 import java.time.LocalDate;
 
 /**
- * One piece of guest feedback, submitted after checkout.
+ * One piece of guest feedback, submitted after checkout. Presentation-tier view of a
+ * database-backed {@link Feedback} entity, built via {@link #from(Feedback)}.
  */
 public class FeedbackEntry {
 
@@ -22,6 +25,14 @@ public class FeedbackEntry {
         this.comment = comment;
         this.sentiment = sentiment;
         this.date = date;
+    }
+
+    /** Maps a persisted {@link Feedback} entity to its presentation-tier view. */
+    public static FeedbackEntry from(Feedback entity) {
+        String resNo = entity.getReservation() != null ? entity.getReservation().getCode() : "—";
+        String guest = entity.getGuest() != null ? entity.getGuest().fullName() : "";
+        return new FeedbackEntry(resNo, guest, entity.getRating(), entity.getComment(),
+                entity.getSentiment(), entity.getCreatedAt().toLocalDate());
     }
 
     /** e.g. "★★★★☆  4/5" */

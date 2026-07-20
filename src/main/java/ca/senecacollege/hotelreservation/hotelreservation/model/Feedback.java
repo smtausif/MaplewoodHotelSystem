@@ -14,8 +14,9 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 
 /**
- * A guest's star rating and comment, submitted after checkout. Linked to both the
- * {@link Reservation} (one feedback per stay) and the {@link Guest}.
+ * A guest's star rating and comment, submitted after checkout. Linked to the
+ * {@link Guest}, and optionally to the {@link Reservation} it's about (one feedback
+ * per stay) — a guest may leave feedback without citing a reservation number.
  * Maps to the {@code feedback} table.
  */
 @Entity
@@ -41,8 +42,9 @@ public class Feedback {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @OneToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "reservation_id", nullable = false, unique = true)
+    /** Optional — a guest may submit feedback without a reservation number. */
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "reservation_id", unique = true)
     private Reservation reservation;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)

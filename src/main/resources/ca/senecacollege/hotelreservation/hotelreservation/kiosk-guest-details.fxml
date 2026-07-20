@@ -8,8 +8,6 @@
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.control.ScrollPane?>
@@ -23,12 +21,6 @@
            fx:controller="ca.senecacollege.hotelreservation.hotelreservation.GuestDetailsPage"
            prefWidth="1024" prefHeight="768"
            styleClass="root-pane" stylesheets="@kiosk.css">
-
-    <ImageView fitWidth="1024" fitHeight="768" preserveRatio="false" opacity="0.3">
-        <image>
-            <Image url="@/lobby-background.jpg"/>
-        </image>
-    </ImageView>
 
     <Region styleClass="cream-overlay"/>
 
@@ -180,6 +172,15 @@
                 <Button text="Check Membership" onAction="#onCheckMembership" styleClass="back-nav-button-small"/>
                 <Label fx:id="lookupMessageLabel" styleClass="field-error" wrapText="true"/>
             </HBox>
+
+            <VBox fx:id="joinPromptBox" spacing="10" managed="false" visible="false">
+                <Label text="Not a member yet? Join Maplewood Rewards and start earning points on every stay."
+                       styleClass="note-label" wrapText="true"/>
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Button text="Join Maplewood Rewards" onAction="#onJoinRewards" styleClass="save-button"/>
+                    <Label fx:id="joinMessageLabel" styleClass="field-error" wrapText="true"/>
+                </HBox>
+            </VBox>
 
             <VBox fx:id="memberFoundBox" spacing="10" managed="false" visible="false">
                 <Label fx:id="welcomeBackLabel" styleClass="card-title"/>

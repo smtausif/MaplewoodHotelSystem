@@ -1,5 +1,6 @@
 package ca.senecacollege.hotelreservation.hotelreservation;
 
+import ca.senecacollege.hotelreservation.hotelreservation.repository.FeedbackRepository;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -40,6 +41,9 @@ public class AdminFeedbackPage implements Initializable {
     @FXML private TableColumn<FeedbackEntry, String> sentimentCol;
     @FXML private TableColumn<FeedbackEntry, String> dateCol;
 
+    private final FeedbackRepository feedbackRepository = new FeedbackRepository();
+
+    private List<FeedbackEntry> allFeedback = new ArrayList<>();
     private List<FeedbackEntry> filtered = new ArrayList<>();
 
     private static final DateTimeFormatter DAY_FMT = DateTimeFormatter.ofPattern("dd MMM", Locale.ENGLISH);
@@ -96,8 +100,10 @@ public class AdminFeedbackPage implements Initializable {
                 "Sentiment: Any", "Positive", "Neutral", "Negative"));
         sentimentCombo.setValue("Sentiment: Any");
 
+        allFeedback = loadFeedback();
+
         TreeSet<String> guests = new TreeSet<>();
-        for (FeedbackEntry f : FeedbackStore.all()) {
+        for (FeedbackEntry f : allFeedback) {
             guests.add(f.guest);
         }
         List<String> guestItems = new ArrayList<>();
@@ -113,6 +119,16 @@ public class AdminFeedbackPage implements Initializable {
         applyFilters();
     }
 
+    /* ---------- loading ---------- */
+
+    private List<FeedbackEntry> loadFeedback() {
+        List<FeedbackEntry> list = new ArrayList<>();
+        for (var entity : feedbackRepository.findAllNewestFirst()) {
+            list.add(FeedbackEntry.from(entity));
+        }
+        return list;
+    }
+
     /* ---------- filtering + average ---------- */
 
     private void applyFilters() {
@@ -121,7 +137,7 @@ public class AdminFeedbackPage implements Initializable {
         String guest = guestCombo.getValue();
 
         filtered = new ArrayList<>();
-        for (FeedbackEntry f : FeedbackStore.all()) {
+        for (FeedbackEntry f : allFeedback) {
             if (rating != null && !rating.startsWith("Rating")
                     && f.rating != Character.getNumericValue(rating.charAt(0))) {
                 continue;

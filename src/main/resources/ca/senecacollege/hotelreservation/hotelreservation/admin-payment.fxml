@@ -7,8 +7,6 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -18,12 +16,6 @@
            fx:controller="ca.senecacollege.hotelreservation.hotelreservation.AdminPaymentPage"
            prefWidth="1024" prefHeight="768"
            styleClass="root-pane" stylesheets="@kiosk.css">
-
-    <ImageView fitWidth="1024" fitHeight="768" preserveRatio="false" opacity="0.12">
-        <image>
-            <Image url="@/lobby-background.jpg"/>
-        </image>
-    </ImageView>
 
     <Region styleClass="cream-overlay"/>
 

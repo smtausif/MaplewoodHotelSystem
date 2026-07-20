@@ -103,7 +103,7 @@ public class AdminLoginPage implements Initializable {
     }
 
     @FXML
-    private void onBackToMenu() {
-        SceneNavigator.go(usernameField, "launcher-menu.fxml");
+    private void onBackToWelcome() {
+        SceneNavigator.go(usernameField, "kiosk-welcome.fxml");
     }
 }

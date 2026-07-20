@@ -1,5 +1,6 @@
 package ca.senecacollege.hotelreservation.hotelreservation;
 
+import ca.senecacollege.hotelreservation.hotelreservation.repository.LoyaltyTransactionRepository;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -163,7 +164,7 @@ public class BookingSummaryPage implements Initializable {
         int redeemPoints = BookingSession.loyaltyRedeemPoints;
 
         double discount = redeemPoints > 0
-                ? redeemPoints / (double) LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED
+                ? redeemPoints / (double) LoyaltyTransactionRepository.POINTS_PER_DOLLAR_REDEEMED
                 : 0;
         discount = Math.min(discount, roomSubtotal + addons);
         double taxable = Math.max(roomSubtotal + addons - discount, 0);
@@ -219,12 +220,9 @@ public class BookingSummaryPage implements Initializable {
         int year = LocalDateTime.now().getYear();
         BookingSession.confirmationCode = "MPL-" + year + "-" + (1000 + new Random().nextInt(9000));
 
-        // redemption is posted to the member's ledger now, at booking time; earning happens
-        // later, after the stay is actually completed — this page only shows the estimate
-        if (BookingSession.loyaltyMemberId != null && BookingSession.loyaltyRedeemPoints > 0) {
-            LoyaltyStore.redeem(BookingSession.loyaltyMemberId, BookingSession.loyaltyRedeemPoints,
-                    BookingSession.confirmationCode, "Kiosk");
-        }
+        // The redemption itself is posted to the member's ledger once the reservation this
+        // redemption is tied to has actually been saved (see ConfirmationPage) — earning
+        // happens later, after the stay is completed; this page only shows the estimate.
 
         SceneNavigator.go(clockLabel, "kiosk-confirmation.fxml");
     }

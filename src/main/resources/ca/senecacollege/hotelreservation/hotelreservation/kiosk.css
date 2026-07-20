@@ -2,6 +2,10 @@
 
 .root-pane {
     -fx-background-color: #faf5ec;
+    -fx-background-image: url("../../../../lobby-background.jpg");
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
 }
 
 .cream-overlay {

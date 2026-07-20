@@ -1,5 +1,10 @@
 package ca.senecacollege.hotelreservation.hotelreservation;
 
+import ca.senecacollege.hotelreservation.hotelreservation.model.LoyaltyAccount;
+import ca.senecacollege.hotelreservation.hotelreservation.persistence.JpaUtil;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.LoyaltyAccountRepository;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.LoyaltyTransactionRepository;
+import jakarta.persistence.EntityManager;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -60,10 +65,13 @@ public class AdminReservationDetailPage implements Initializable {
     private static final double TAX_RATE = 0.13;
     private static final double DISCOUNT_RATE = 0.10;
 
+    private final LoyaltyAccountRepository loyaltyAccountRepository = new LoyaltyAccountRepository();
+    private final LoyaltyTransactionRepository loyaltyTransactionRepository = new LoyaltyTransactionRepository();
+
     private Reservation original;
 
     /** Set only if this reservation's guest matches a demo loyalty member. */
-    private LoyaltyMember loyaltyMember;
+    private LoyaltyAccount loyaltyMember;
 
     /** The rooms actually in this reservation right now — the editable source of truth for Add/Delete Room. */
     private final List<RoomEntry> rooms = new ArrayList<>();
@@ -146,14 +154,16 @@ public class AdminReservationDetailPage implements Initializable {
         paid = original.balance == 0;
 
         // loyalty callout — only shown if this guest matches a demo loyalty member
-        loyaltyMember = LoyaltyStore.findByGuestName(original.guest).orElse(null);
+        loyaltyMember = loyaltyAccountRepository.findByGuestFullName(original.guest).orElse(null);
         loyaltyBox.setVisible(loyaltyMember != null);
         loyaltyBox.setManaged(loyaltyMember != null);
         if (loyaltyMember != null) {
-            loyaltyMemberIdValue.setText(loyaltyMember.memberId());
-            loyaltyPointsValue.setText(String.format("%,d", LoyaltyStore.balanceOf(loyaltyMember.memberId())) + " pts");
-            loyaltyRedeemedValue.setText(String.format("%,d",
-                    LoyaltyStore.redeemedOnReservation(loyaltyMember.memberId(), original.resNo)) + " pts");
+            loyaltyMemberIdValue.setText(loyaltyMember.getLoyaltyNumber());
+            int balance = loyaltyTransactionRepository.balanceOf(loyaltyMember.getId());
+            loyaltyPointsValue.setText(String.format("%,d", balance) + " pts");
+            Long reservationId = findReservationIdByCode(original.resNo);
+            int redeemed = loyaltyTransactionRepository.redeemedOnReservation(loyaltyMember.getId(), reservationId);
+            loyaltyRedeemedValue.setText(String.format("%,d", redeemed) + " pts");
         }
 
         // recalc whenever anything changes
@@ -229,8 +239,21 @@ public class AdminReservationDetailPage implements Initializable {
         if (loyaltyMember != null) {
             // 1 CAD spent = 1 point; "after stay" = today's available points plus what this stay will earn
             long earnedFromStay = Math.round(finalTotal);
-            long pointsAfterStay = LoyaltyStore.balanceOf(loyaltyMember.memberId()) + earnedFromStay;
+            long pointsAfterStay = loyaltyTransactionRepository.balanceOf(loyaltyMember.getId()) + earnedFromStay;
             loyaltyEarnValue.setText(String.format("%,d", pointsAfterStay) + " pts");
+        }
+    }
+
+    /** Looks up a reservation's database id by its human-facing code, or null if not found. */
+    private Long findReservationIdByCode(String code) {
+        EntityManager em = JpaUtil.createEntityManager();
+        try {
+            return em.createQuery(
+                            "select r.id from Reservation r where r.code = :code", Long.class)
+                    .setParameter("code", code)
+                    .getResultStream().findFirst().orElse(null);
+        } finally {
+            em.close();
         }
     }
 

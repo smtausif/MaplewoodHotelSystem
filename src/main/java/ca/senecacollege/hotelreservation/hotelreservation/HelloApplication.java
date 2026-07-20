@@ -26,13 +26,11 @@ public class HelloApplication extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("launcher-menu.fxml"));
+        FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("kiosk-welcome.fxml"));
         Scene scene = new Scene(loader.load(), 1024, 768);
         stage.setTitle("Maplewood Grand — UI Prototype (Milestone 1)");
         stage.setScene(scene);
         stage.show();
-
-
     }
 
     @Override

@@ -1,5 +1,10 @@
 package ca.senecacollege.hotelreservation.hotelreservation;
 
+import ca.senecacollege.hotelreservation.hotelreservation.model.Guest;
+import ca.senecacollege.hotelreservation.hotelreservation.model.RoomTypeEntity;
+import ca.senecacollege.hotelreservation.hotelreservation.model.Waitlist;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.WaitlistRepository;
+import jakarta.persistence.EntityManager;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -16,7 +21,6 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.VBox;
 
@@ -24,13 +28,14 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.function.UnaryOperator;
 
-public class AdminWaitlistPage implements Initializable, WaitlistStore.RoomFreedListener {
+public class AdminWaitlistPage implements Initializable, WaitlistNotifier.RoomFreedListener {
 
     @FXML private Label loggedInLabel;
     @FXML private Button addToggleButton;
@@ -54,6 +59,8 @@ public class AdminWaitlistPage implements Initializable, WaitlistStore.RoomFreed
     private static final Set<String> DEMO_OCCUPIED_ROOMS = Set.of("305", "412", "502");
 
     private static final DateTimeFormatter DAY_FMT = DateTimeFormatter.ofPattern("dd MMM", Locale.ENGLISH);
+
+    private final WaitlistRepository waitlistRepository = new WaitlistRepository();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -92,13 +99,8 @@ public class AdminWaitlistPage implements Initializable, WaitlistStore.RoomFreed
         qtyCombo.setItems(FXCollections.observableArrayList(1, 2, 3));
         qtyCombo.setValue(1);
 
-        // preferred room number: numeric only, optional
-        UnaryOperator<TextFormatter.Change> digitsOnly = change ->
-                change.getControlNewText().matches("[0-9]*") ? change : null;
-        preferredRoomField.setTextFormatter(new TextFormatter<>(digitsOnly));
-
         // Observer: refresh this table live if a room frees up while the page is open
-        WaitlistStore.subscribe(this);
+        WaitlistNotifier.subscribe(this);
 
         refresh();
     }
@@ -109,7 +111,11 @@ public class AdminWaitlistPage implements Initializable, WaitlistStore.RoomFreed
     }
 
     private void refresh() {
-        table.setItems(FXCollections.observableArrayList(WaitlistStore.all()));
+        List<WaitlistEntry> entries = new ArrayList<>();
+        for (Waitlist w : waitlistRepository.findActive()) {
+            entries.add(WaitlistEntry.from(w));
+        }
+        table.setItems(FXCollections.observableArrayList(entries));
     }
 
     /* ---------- add to waitlist ---------- */
@@ -151,9 +157,16 @@ public class AdminWaitlistPage implements Initializable, WaitlistStore.RoomFreed
             return;
         }
 
-        WaitlistStore.all().add(new WaitlistEntry(
-                guest, roomType, qtyCombo.getValue(),
-                from, to, LocalDate.now(), "Waiting", preferredRoom.isBlank() ? null : preferredRoom));
+        int qty = qtyCombo.getValue();
+        String preferredRoomNumber = preferredRoom.isBlank() ? null : preferredRoom;
+        waitlistRepository.createInTransaction(em -> {
+            Guest guestEntity = newGuestFromName(em, guest);
+            RoomTypeEntity type = requireRoomType(em, roomType);
+            Waitlist w = new Waitlist(guestEntity, type, from, to);
+            w.setQuantity(qty);
+            w.setPreferredRoomNumber(preferredRoomNumber);
+            return w;
+        });
 
         guestField.clear();
         fromPicker.setValue(null);
@@ -161,6 +174,27 @@ public class AdminWaitlistPage implements Initializable, WaitlistStore.RoomFreed
         preferredRoomField.clear();
         toggleAddForm();
         refresh();
+    }
+
+    /** Creates a lightweight guest record for a waitlist entry added from the admin side. */
+    private Guest newGuestFromName(EntityManager em, String fullName) {
+        String first = fullName;
+        String last = "";
+        int space = fullName.indexOf(' ');
+        if (space > 0) {
+            first = fullName.substring(0, space);
+            last = fullName.substring(space + 1);
+        }
+        Guest guest = new Guest(first, last, null, null);
+        em.persist(guest);
+        return guest;
+    }
+
+    private RoomTypeEntity requireRoomType(EntityManager em, String name) {
+        return em.createQuery("select rt from RoomTypeEntity rt where rt.name = :name", RoomTypeEntity.class)
+                .setParameter("name", name)
+                .getResultStream().findFirst()
+                .orElseThrow(() -> new IllegalStateException("Room type not seeded: " + name));
     }
 
     /* ---------- convert / notify ---------- */
@@ -213,7 +247,7 @@ public class AdminWaitlistPage implements Initializable, WaitlistStore.RoomFreed
 
         ReservationStore.add(new Reservation(resNo, entry.guest, "(—) on file",
                 entry.desiredFrom, nights, entry.qty, entry.roomType, "Confirmed", balance));
-        WaitlistStore.all().remove(entry);
+        waitlistRepository.markInactive(entry.id);
         refresh();
 
         String roomSuffix = assignedRoom != null ? " (Room " + assignedRoom + ")" : "";
@@ -263,7 +297,7 @@ public class AdminWaitlistPage implements Initializable, WaitlistStore.RoomFreed
             return;
         }
 
-        entry.status = "Notified";
+        waitlistRepository.markStatus(entry.id, "Notified");
         refresh();
 
         Alert done = new Alert(Alert.AlertType.INFORMATION);
@@ -277,7 +311,7 @@ public class AdminWaitlistPage implements Initializable, WaitlistStore.RoomFreed
 
     @FXML
     private void onBack() {
-        WaitlistStore.unsubscribe(this);
+        WaitlistNotifier.unsubscribe(this);
         SceneNavigator.go(table, "admin-dashboard.fxml");
     }
 

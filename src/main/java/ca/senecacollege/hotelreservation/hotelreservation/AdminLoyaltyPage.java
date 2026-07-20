@@ -1,5 +1,9 @@
 package ca.senecacollege.hotelreservation.hotelreservation;
 
+import ca.senecacollege.hotelreservation.hotelreservation.model.LoyaltyAccount;
+import ca.senecacollege.hotelreservation.hotelreservation.model.LoyaltyTransaction;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.LoyaltyAccountRepository;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.LoyaltyTransactionRepository;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -14,11 +18,16 @@ import javafx.scene.control.TextInputDialog;
 
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class AdminLoyaltyPage implements Initializable {
+
+    /** The demo member shown by default when the admin dashboard opens this page. */
+    private static final String DEFAULT_MEMBER_NUMBER = "MPL-RW-8842";
 
     @FXML private Label loggedInLabel;
 
@@ -37,13 +46,16 @@ public class AdminLoyaltyPage implements Initializable {
     @FXML private Label redemptionRateValue;
     @FXML private Label earnRateValue;
 
-    @FXML private TableView<LoyaltyStore.Txn> table;
-    @FXML private TableColumn<LoyaltyStore.Txn, String> resCol;
-    @FXML private TableColumn<LoyaltyStore.Txn, String> typeCol;
-    @FXML private TableColumn<LoyaltyStore.Txn, String> pointsCol;
-    @FXML private TableColumn<LoyaltyStore.Txn, String> dateCol;
+    @FXML private TableView<LoyaltyTransactionEntry> table;
+    @FXML private TableColumn<LoyaltyTransactionEntry, String> resCol;
+    @FXML private TableColumn<LoyaltyTransactionEntry, String> typeCol;
+    @FXML private TableColumn<LoyaltyTransactionEntry, String> pointsCol;
+    @FXML private TableColumn<LoyaltyTransactionEntry, String> dateCol;
 
-    private LoyaltyMember member;
+    private final LoyaltyAccountRepository loyaltyAccountRepository = new LoyaltyAccountRepository();
+    private final LoyaltyTransactionRepository loyaltyTransactionRepository = new LoyaltyTransactionRepository();
+
+    private LoyaltyAccount account;
 
     private static final DateTimeFormatter DAY_FMT = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
 
@@ -53,8 +65,9 @@ public class AdminLoyaltyPage implements Initializable {
                 ? "Logged in as " + AdminSession.username + " (" + AdminSession.role + ")"
                 : "Not logged in (demo mode)");
 
-        member = LoyaltyStore.memberById(LoyaltyStore.currentMemberId)
-                .orElseGet(() -> LoyaltyStore.allMembers().get(0));
+        account = loyaltyAccountRepository.findByLoyaltyNumber(DEFAULT_MEMBER_NUMBER)
+                .or(loyaltyAccountRepository::findFirst)
+                .orElseThrow(() -> new IllegalStateException("No loyalty accounts in the database"));
 
         resCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().resNo));
         typeCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().type));
@@ -63,13 +76,13 @@ public class AdminLoyaltyPage implements Initializable {
                 (d.getValue().points >= 0 ? "+" : "") + String.format("%,d", d.getValue().points)));
         pointsCol.setCellFactory(col -> colorCell());
 
-        redemptionRateValue.setText(LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED + " points = $1 CAD");
-        earnRateValue.setText("$1 spent = " + LoyaltyStore.EARN_RATE_PER_DOLLAR + " point");
+        redemptionRateValue.setText(LoyaltyTransactionRepository.POINTS_PER_DOLLAR_REDEEMED + " points = $1 CAD");
+        earnRateValue.setText("$1 spent = " + LoyaltyTransactionRepository.EARN_RATE_PER_DOLLAR + " point");
 
         refresh();
     }
 
-    private TableCell<LoyaltyStore.Txn, String> colorCell() {
+    private TableCell<LoyaltyTransactionEntry, String> colorCell() {
         return new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -84,23 +97,29 @@ public class AdminLoyaltyPage implements Initializable {
     }
 
     private void refresh() {
-        memberNameValue.setText(member.name());
-        memberIdValue.setText(member.memberId());
-        memberTierValue.setText(member.tier());
-        memberPointsValue.setText(String.format("%,d", LoyaltyStore.balanceOf(member.memberId())));
+        memberNameValue.setText(account.getGuest().fullName());
+        memberIdValue.setText(account.getLoyaltyNumber());
+        memberTierValue.setText(account.getTier());
 
-        balanceValue.setText(String.format("%,d", LoyaltyStore.balanceOf(member.memberId())));
-        earnedValue.setText(String.format("%,d", LoyaltyStore.lifetimeEarnedOf(member.memberId())));
-        redeemedValue.setText(String.format("%,d", LoyaltyStore.lifetimeRedeemedOf(member.memberId())));
+        int balance = loyaltyTransactionRepository.balanceOf(account.getId());
+        memberPointsValue.setText(String.format("%,d", balance));
 
-        table.setItems(FXCollections.observableArrayList(LoyaltyStore.history(member.memberId())));
+        balanceValue.setText(String.format("%,d", balance));
+        earnedValue.setText(String.format("%,d", loyaltyTransactionRepository.lifetimeEarnedOf(account.getId())));
+        redeemedValue.setText(String.format("%,d", loyaltyTransactionRepository.lifetimeRedeemedOf(account.getId())));
+
+        List<LoyaltyTransactionEntry> entries = new ArrayList<>();
+        for (LoyaltyTransaction txn : loyaltyTransactionRepository.findByAccountId(account.getId())) {
+            entries.add(LoyaltyTransactionEntry.from(txn));
+        }
+        table.setItems(FXCollections.observableArrayList(entries));
     }
 
     /* ---------- redeem ---------- */
 
     @FXML
     private void onRedeem() {
-        int balance = LoyaltyStore.balanceOf(member.memberId());
+        int balance = loyaltyTransactionRepository.balanceOf(account.getId());
         if (balance <= 0) {
             warn("No points", "This member has no points available to redeem.");
             return;
@@ -108,9 +127,9 @@ public class AdminLoyaltyPage implements Initializable {
 
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Maplewood Grand — Loyalty");
-        dialog.setHeaderText("Redeem points for " + member.name());
+        dialog.setHeaderText("Redeem points for " + account.getGuest().fullName());
         dialog.setContentText("Points to redeem (balance " + String.format("%,d", balance)
-                + ", cap " + String.format("%,d", LoyaltyStore.REDEEM_CAP_PER_RES) + " per reservation):");
+                + ", cap " + String.format("%,d", LoyaltyTransactionRepository.REDEEM_CAP_PER_RES) + " per reservation):");
 
         Optional<String> result = dialog.showAndWait();
         if (result.isEmpty()) {
@@ -133,9 +152,9 @@ public class AdminLoyaltyPage implements Initializable {
             warn("Not enough points", "This member only has " + String.format("%,d", balance) + " points.");
             return;
         }
-        if (points > LoyaltyStore.REDEEM_CAP_PER_RES) {
+        if (points > LoyaltyTransactionRepository.REDEEM_CAP_PER_RES) {
             warn("Over the cap", "Redemption is capped at "
-                    + String.format("%,d", LoyaltyStore.REDEEM_CAP_PER_RES) + " points per reservation.");
+                    + String.format("%,d", LoyaltyTransactionRepository.REDEEM_CAP_PER_RES) + " points per reservation.");
             return;
         }
         // multiples of 100 keep the dollar value clean
@@ -149,32 +168,26 @@ public class AdminLoyaltyPage implements Initializable {
             }
         }
 
-        LoyaltyStore.redeem(member.memberId(), points, "MPL-PHONE", staffName());
+        Long accountId = account.getId();
+        int finalPoints = points;
+        loyaltyTransactionRepository.createInTransaction(em -> {
+            LoyaltyAccount managed = em.find(LoyaltyAccount.class, accountId);
+            LoyaltyTransaction txn = new LoyaltyTransaction("Redeem", -finalPoints, null);
+            managed.addTransaction(txn);
+            return txn;
+        });
         refresh();
 
         Alert done = new Alert(Alert.AlertType.INFORMATION);
         done.setTitle("Maplewood Grand — Loyalty");
         done.setHeaderText("Points redeemed");
         done.setContentText(String.format("%,d", points) + " points redeemed for "
-                + money(points / (double) LoyaltyStore.POINTS_PER_DOLLAR_REDEEMED) + " off.\nNew balance: "
-                + String.format("%,d", LoyaltyStore.balanceOf(member.memberId())) + " points.");
+                + money(points / (double) LoyaltyTransactionRepository.POINTS_PER_DOLLAR_REDEEMED) + " off.\nNew balance: "
+                + String.format("%,d", loyaltyTransactionRepository.balanceOf(account.getId())) + " points.");
         done.showAndWait();
     }
 
     /* ---------- helpers ---------- */
-
-    private String staffName() {
-        String u = AdminSession.username;
-        if (u == null || u.isBlank()) {
-            return "Front Desk";
-        }
-        String[] parts = u.split("\\.");
-        if (parts.length == 2) {
-            return parts[0].toUpperCase() + ". "
-                    + Character.toUpperCase(parts[1].charAt(0)) + parts[1].substring(1);
-        }
-        return u;
-    }
 
     private String money(double v) {
         return (v < 0 ? "-" : "") + String.format("$%,.2f", Math.abs(v));
