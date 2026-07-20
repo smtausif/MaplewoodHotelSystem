@@ -198,8 +198,10 @@ public class WelcomePage implements Initializable {
 
     @FXML
     private void onRulesClicked() {
-        // TODO: show the rules & regulations screen/dialog
-        System.out.println("Rules & regulations");
+        if (mediaPlayer != null) {
+            mediaPlayer.pause(); // don't let the video keep playing in the background
+        }
+        SceneNavigator.goToRules(clockLabel, "kiosk-welcome.fxml");
     }
 
     @FXML

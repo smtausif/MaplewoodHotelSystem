@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Author: SS -->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<StackPane fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ca.senecacollege.hotelreservation.hotelreservation.RulesPage"
+           prefWidth="1024" prefHeight="768"
+           styleClass="root-pane" stylesheets="@kiosk.css">
+
+    <ImageView fitWidth="1024" fitHeight="768" preserveRatio="false" opacity="0.3">
+        <image>
+            <Image url="@/lobby-background.jpg"/>
+        </image>
+    </ImageView>
+
+    <Region styleClass="cream-overlay"/>
+
+    <VBox alignment="TOP_CENTER" spacing="12">
+        <padding>
+            <Insets top="20" right="36" bottom="18" left="36"/>
+        </padding>
+
+        <!-- ============ HEADER ============ -->
+        <StackPane>
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Button onAction="#onBack" styleClass="rules-button"
+                        text="BACK" contentDisplay="LEFT" graphicTextGap="8">
+                    <graphic>
+                        <SVGPath content="M20,11 H7.83 l5.59,-5.59 L12,4 l-8,8 8,8 1.41,-1.41 L7.83,13 H20 V11 z"
+                                 scaleX="0.75" scaleY="0.75" styleClass="gold-icon"/>
+                    </graphic>
+                </Button>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <VBox alignment="TOP_RIGHT">
+                    <Label fx:id="clockLabel" text="10:48 AM" styleClass="clock-label"/>
+                    <Label fx:id="dateLabel" text="Saturday, July 4" styleClass="date-label"/>
+                </VBox>
+            </HBox>
+
+            <VBox alignment="CENTER" pickOnBounds="false" mouseTransparent="true">
+                <Label text="Maplewood Grand" styleClass="header-hotel-name"/>
+                <Label text="H O T E L" styleClass="header-hotel-sub"/>
+            </VBox>
+        </StackPane>
+
+        <!-- ============ TITLE ============ -->
+        <Label text="RULES &amp; REGULATIONS" styleClass="page-title"/>
+
+        <!-- ============ CONTENT ============ -->
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="clear-scroll"
+                    maxWidth="936" VBox.vgrow="ALWAYS">
+            <VBox.margin>
+                <Insets top="4"/>
+            </VBox.margin>
+            <VBox spacing="14">
+                <padding>
+                    <Insets top="4" right="4" bottom="16" left="4"/>
+                </padding>
+
+                <VBox spacing="6" styleClass="panel-card">
+                    <padding>
+                        <Insets top="16" right="18" bottom="16" left="18"/>
+                    </padding>
+                    <Label text="Room Occupancy Limits" styleClass="card-title"/>
+                    <Label styleClass="room-desc" wrapText="true"
+                           text="• Single rooms allow up to 2 guests.&#10;• Double rooms allow up to 4 guests.&#10;• Deluxe and Penthouse rooms allow up to 2 guests at a premium rate.&#10;• Occupancy is checked both per room and across the whole group booking."/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="panel-card">
+                    <padding>
+                        <Insets top="16" right="18" bottom="16" left="18"/>
+                    </padding>
+                    <Label text="Group Bookings" styleClass="card-title"/>
+                    <Label styleClass="room-desc" wrapText="true"
+                           text="• Groups of 3–4 adults are offered one Double room or two Single rooms, or may choose their own room types and quantities.&#10;• Groups larger than 4 adults are offered multiple Double rooms, or a mix of Double and Single rooms, until capacity is met.&#10;• Any self-selected combination must still satisfy the occupancy limits above."/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="panel-card">
+                    <padding>
+                        <Insets top="16" right="18" bottom="16" left="18"/>
+                    </padding>
+                    <Label text="Rates, Add-ons &amp; Payments" styleClass="card-title"/>
+                    <Label styleClass="room-desc" wrapText="true"
+                           text="• Room rates vary by weekday, weekend, and peak season.&#10;• Add-on services (Wi-Fi, breakfast, parking, spa) are priced per night or per reservation depending on the service.&#10;• Reservations are confirmed and saved at the kiosk; all billing and payment (cash, card, or loyalty points) is completed at the front desk.&#10;• A balance must be fully settled before checkout."/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="panel-card">
+                    <padding>
+                        <Insets top="16" right="18" bottom="16" left="18"/>
+                    </padding>
+                    <Label text="Loyalty Program" styleClass="card-title"/>
+                    <Label styleClass="room-desc" wrapText="true"
+                           text="• Guests earn loyalty points based on the amount paid.&#10;• Points may be redeemed for discounts on a future or current stay, up to the posted redemption cap.&#10;• Loyalty numbers are issued at enrollment and can be used at check-in to look up your account."/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="panel-card">
+                    <padding>
+                        <Insets top="16" right="18" bottom="16" left="18"/>
+                    </padding>
+                    <Label text="Guest Feedback" styleClass="card-title"/>
+                    <Label styleClass="room-desc" wrapText="true"
+                           text="• Feedback can only be submitted after checkout, once any outstanding balance has been fully settled.&#10;• Ratings and comments help us improve — thank you for sharing yours."/>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+
+        <!-- ============ BACK ============ -->
+        <HBox alignment="CENTER" maxWidth="936">
+            <VBox.margin>
+                <Insets top="6"/>
+            </VBox.margin>
+            <Button text="BACK TO WHERE I LEFT OFF" onAction="#onBack" styleClass="back-nav-button"/>
+        </HBox>
+    </VBox>
+</StackPane>

@@ -188,8 +188,7 @@ public class AddonsPage implements Initializable {
 
     @FXML
     private void onRulesClicked() {
-        // TODO: show the rules & regulations screen/dialog
-        System.out.println("Rules & regulations");
+        SceneNavigator.goToRules(clockLabel, "kiosk-addons.fxml");
     }
 
     @FXML

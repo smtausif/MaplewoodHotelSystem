@@ -9,6 +9,7 @@ module ca.senecacollege.hotelreservation.hotelreservation {
     requires com.h2database;
     requires java.sql;
     requires java.naming;
+    requires jbcrypt;
 
     // JavaFX needs reflective access to the controllers/base package
     opens ca.senecacollege.hotelreservation.hotelreservation to javafx.fxml;

@@ -1,5 +1,10 @@
 package ca.senecacollege.hotelreservation.hotelreservation;
 
+import ca.senecacollege.hotelreservation.hotelreservation.model.Billing;
+import ca.senecacollege.hotelreservation.hotelreservation.model.Room;
+import ca.senecacollege.hotelreservation.hotelreservation.model.ReservationRoom;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.ReservationRepository;
+import ca.senecacollege.hotelreservation.hotelreservation.repository.RoomRepository;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -14,11 +19,20 @@ import javafx.stage.Window;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.TreeMap;
 
 public class AdminReportsPage implements Initializable {
 
@@ -29,9 +43,16 @@ public class AdminReportsPage implements Initializable {
     @FXML private Label captionLabel;
     @FXML private TableView<String[]> table;
 
+    private final ReservationRepository reservationRepo = new ReservationRepository();
+    private final RoomRepository roomRepo = new RoomRepository();
+
     // current report contents (header + rows) — also what gets exported
     private String[] headers = new String[0];
     private final List<String[]> rows = new ArrayList<>();
+
+    private static final DateTimeFormatter DAY_FMT = DateTimeFormatter.ofPattern("EEE MMM d", Locale.ENGLISH);
+    private static final DateTimeFormatter MONTH_DAY_FMT = DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH);
+    private static final DateTimeFormatter MONTH_FMT = DateTimeFormatter.ofPattern("MMM yyyy", Locale.ENGLISH);
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -60,15 +81,16 @@ public class AdminReportsPage implements Initializable {
         String view = viewCombo.getValue();
         String room = roomCombo.getValue();
 
-        captionLabel.setText(report + " summary  ·  " + view + "  ·  July 2026"
-                + ("All".equals(room) ? "" : "  ·  " + room));
-
         rows.clear();
         if ("Revenue".equals(report)) {
             buildRevenue(view, room);
         } else {
             buildOccupancy(view, room);
         }
+
+        captionLabel.setText(report + " summary  ·  " + view
+                + ("All".equals(room) ? "" : "  ·  " + room)
+                + "  ·  " + rows.size() + (rows.isEmpty() ? " periods" : rows.size() == 1 ? " period" : " periods"));
 
         // rebuild table columns to match the current report shape
         table.getColumns().clear();
@@ -83,107 +105,194 @@ public class AdminReportsPage implements Initializable {
         table.setItems(FXCollections.observableArrayList(rows));
     }
 
-    /** A room-type filter scales the figures so the numbers stay believable. */
-    private double roomShare(String room) {
-        return switch (room) {
-            case "Single" -> 0.22;
-            case "Double" -> 0.40;
-            case "Deluxe" -> 0.23;
-            case "Penthouse" -> 0.15;
-            default -> 1.0;
-        };
+    /* ==================== Revenue: real reservations/billing from the database ==================== */
+
+    /** One period's worth of revenue, filtered to the rooms the guest actually booked. */
+    private static final class RevenueBucket {
+        int reservations;
+        BigDecimal subtotal = BigDecimal.ZERO;
+        BigDecimal tax = BigDecimal.ZERO;
+        BigDecimal discount = BigDecimal.ZERO;
+        BigDecimal total = BigDecimal.ZERO;
     }
 
     private void buildRevenue(String view, String room) {
         headers = new String[]{"Period", "Reservations", "Subtotal", "Tax", "Discounts", "Total"};
-        double s = roomShare(room);
+        String roomTypeFilter = "All".equals(room) ? null : room;
 
-        String[][] weekly = {
-                {"Jul 1–7", "41", "38420", "4994.60", "-2110", ""},
-                {"Jul 8–14", "53", "49880", "6484.40", "-3240", ""},
-                {"Jul 15–21", "47", "44110", "5734.30", "-2690", ""},
-                {"Jul 22–28", "50", "47300", "6149.00", "-2980", ""},
-        };
-        String[][] daily = {
-                {"Mon Jul 6", "8", "7420", "964.60", "-410", ""},
-                {"Tue Jul 7", "6", "5680", "738.40", "-300", ""},
-                {"Wed Jul 8", "9", "8110", "1054.30", "-520", ""},
-                {"Thu Jul 9", "7", "6300", "819.00", "-280", ""},
-                {"Fri Jul 10", "11", "10240", "1331.20", "-640", ""},
-        };
-        String[][] monthly = {
-                {"May 2026", "168", "156300", "20319.00", "-9400", ""},
-                {"Jun 2026", "182", "171450", "22288.50", "-10600", ""},
-                {"Jul 2026", "191", "179710", "23362.30", "-11020", ""},
-        };
+        Map<String, RevenueBucket> buckets = new TreeMap<>();
+        Map<String, String> labels = new TreeMap<>();
 
-        String[][] src = switch (view) {
-            case "Daily" -> daily;
-            case "Monthly" -> monthly;
-            default -> weekly;
-        };
+        for (var entity : reservationRepo.findAllNewestFirst()) {
+            if ("Cancelled".equals(entity.getStatus()) || entity.getCheckIn() == null) {
+                continue;
+            }
+            Billing billing = entity.getBilling();
+            if (billing == null) {
+                continue;
+            }
+
+            // How much of this reservation's room revenue belongs to the selected room type.
+            BigDecimal typeRoomSubtotal = BigDecimal.ZERO;
+            boolean matchesType = roomTypeFilter == null;
+            long nights = entity.nights();
+            for (ReservationRoom rr : entity.getRooms()) {
+                String typeName = rr.getRoom().getRoomType().getName();
+                BigDecimal lineTotal = rr.getPricePerNight().multiply(BigDecimal.valueOf(nights));
+                if (roomTypeFilter == null) {
+                    typeRoomSubtotal = typeRoomSubtotal.add(lineTotal);
+                } else if (roomTypeFilter.equals(typeName)) {
+                    typeRoomSubtotal = typeRoomSubtotal.add(lineTotal);
+                    matchesType = true;
+                }
+            }
+            if (!matchesType) {
+                continue;
+            }
+
+            // Prorate tax/discount/total by this reservation's room-type share (addons are
+            // not tied to a specific room type, so they're only counted in the "All" view).
+            BigDecimal roomSubtotal = billing.getSubtotal() != null ? billing.getSubtotal() : BigDecimal.ZERO;
+            BigDecimal share = roomTypeFilter == null || roomSubtotal.signum() == 0
+                    ? BigDecimal.ONE
+                    : typeRoomSubtotal.divide(roomSubtotal, 6, RoundingMode.HALF_UP);
+
+            BigDecimal subtotal = roomTypeFilter == null
+                    ? roomSubtotal.add(nz(billing.getAddonTotal()))
+                    : typeRoomSubtotal;
+            BigDecimal tax = nz(billing.getTax()).multiply(share);
+            BigDecimal discount = nz(billing.getDiscountTotal()).multiply(share);
+            BigDecimal total = subtotal.add(tax).subtract(discount);
+
+            String key = periodKey(entity.getCheckIn(), view);
+            RevenueBucket bucket = buckets.computeIfAbsent(key, k -> new RevenueBucket());
+            bucket.reservations++;
+            bucket.subtotal = bucket.subtotal.add(subtotal);
+            bucket.tax = bucket.tax.add(tax);
+            bucket.discount = bucket.discount.add(discount);
+            bucket.total = bucket.total.add(total);
+            labels.putIfAbsent(key, periodLabel(entity.getCheckIn(), view));
+        }
 
         int totRes = 0;
-        double totSub = 0, totTax = 0, totDisc = 0, totTotal = 0;
-        for (String[] r : src) {
-            int res = (int) Math.round(Integer.parseInt(r[1]) * s);
-            double sub = Double.parseDouble(r[2]) * s;
-            double tax = Double.parseDouble(r[3]) * s;
-            double disc = Double.parseDouble(r[4]) * s;
-            double total = sub + tax + disc;
-            totRes += res;
-            totSub += sub;
-            totTax += tax;
-            totDisc += disc;
-            totTotal += total;
-            rows.add(new String[]{r[0], String.valueOf(res), money(sub), money(tax), money(disc), money(total)});
+        BigDecimal totSub = BigDecimal.ZERO, totTax = BigDecimal.ZERO, totDisc = BigDecimal.ZERO, totTotal = BigDecimal.ZERO;
+        for (var e : buckets.entrySet()) {
+            RevenueBucket b = e.getValue();
+            rows.add(new String[]{labels.get(e.getKey()), String.valueOf(b.reservations),
+                    money(b.subtotal), money(b.tax), money(b.discount.negate()), money(b.total)});
+            totRes += b.reservations;
+            totSub = totSub.add(b.subtotal);
+            totTax = totTax.add(b.tax);
+            totDisc = totDisc.add(b.discount);
+            totTotal = totTotal.add(b.total);
         }
-        String totalLabel = switch (view) {
-            case "Daily" -> "Range total";
-            case "Monthly" -> "Quarter total";
-            default -> "Month total";
-        };
-        rows.add(new String[]{totalLabel, String.valueOf(totRes),
-                money(totSub), money(totTax), money(totDisc), money(totTotal)});
+        if (!buckets.isEmpty()) {
+            rows.add(new String[]{"Total", String.valueOf(totRes),
+                    money(totSub), money(totTax), money(totDisc.negate()), money(totTotal)});
+        }
+    }
+
+    /* ==================== Occupancy: real bookings against real room inventory ==================== */
+
+    private static final class OccupancyBucket {
+        long bookedRoomNights;
     }
 
     private void buildOccupancy(String view, String room) {
         headers = new String[]{"Period", "Rooms available", "Rooms occupied", "Occupancy %"};
-        // total rooms of each type (All = 60)
-        int totalRooms = switch (room) {
-            case "Single" -> 18;
-            case "Double" -> 24;
-            case "Deluxe" -> 10;
-            case "Penthouse" -> 8;
-            default -> 60;
-        };
+        String roomTypeFilter = "All".equals(room) ? null : room;
 
-        String[][] periods = switch (view) {
-            case "Daily" -> new String[][]{
-                    {"Mon Jul 6", "72"}, {"Tue Jul 7", "65"}, {"Wed Jul 8", "80"},
-                    {"Thu Jul 9", "77"}, {"Fri Jul 10", "91"}};
-            case "Monthly" -> new String[][]{
-                    {"May 2026", "68"}, {"Jun 2026", "74"}, {"Jul 2026", "81"}};
-            default -> new String[][]{
-                    {"Jul 1–7", "74"}, {"Jul 8–14", "86"}, {"Jul 15–21", "79"}, {"Jul 22–28", "83"}};
-        };
+        List<Room> allRooms = roomRepo.findAll();
+        long totalRooms = allRooms.stream()
+                .filter(r -> roomTypeFilter == null || roomTypeFilter.equals(r.getRoomType().getName()))
+                .count();
 
-        int sumAvail = 0, sumOcc = 0;
-        for (String[] p : periods) {
-            int pct = Integer.parseInt(p[1]);
-            int occupied = (int) Math.round(totalRooms * pct / 100.0);
-            int available = totalRooms - occupied;
-            sumAvail += available;
-            sumOcc += occupied;
-            rows.add(new String[]{p[0], String.valueOf(available), String.valueOf(occupied), pct + "%"});
+        // For every booked night (check-in inclusive, check-out exclusive) that matches the
+        // room-type filter, credit the night's period with one occupied room-night.
+        Map<String, OccupancyBucket> buckets = new TreeMap<>();
+        Map<String, String> labels = new TreeMap<>();
+        Map<String, Long> periodDays = new TreeMap<>();
+
+        for (var entity : reservationRepo.findAllNewestFirst()) {
+            if ("Cancelled".equals(entity.getStatus()) || entity.getCheckIn() == null || entity.getCheckOut() == null) {
+                continue;
+            }
+            long roomsOfType = entity.getRooms().stream()
+                    .filter(rr -> roomTypeFilter == null || roomTypeFilter.equals(rr.getRoom().getRoomType().getName()))
+                    .count();
+            if (roomsOfType == 0) {
+                continue;
+            }
+            for (LocalDate night = entity.getCheckIn(); night.isBefore(entity.getCheckOut()); night = night.plusDays(1)) {
+                String key = periodKey(night, view);
+                buckets.computeIfAbsent(key, k -> new OccupancyBucket()).bookedRoomNights += roomsOfType;
+                labels.putIfAbsent(key, periodLabel(night, view));
+            }
         }
-        int denom = sumAvail + sumOcc;
-        int avgPct = denom == 0 ? 0 : (int) Math.round(sumOcc * 100.0 / denom);
-        rows.add(new String[]{"Average", String.valueOf(sumAvail), String.valueOf(sumOcc), avgPct + "%"});
+        for (String key : buckets.keySet()) {
+            periodDays.put(key, periodLengthInDays(key, view));
+        }
+
+        long sumAvail = 0, sumOccupied = 0, sumCapacity = 0, sumBooked = 0;
+        for (var e : buckets.entrySet()) {
+            long capacity = totalRooms * periodDays.get(e.getKey());
+            long booked = Math.min(e.getValue().bookedRoomNights, Math.max(capacity, 0));
+            int pct = capacity == 0 ? 0 : (int) Math.round(booked * 100.0 / capacity);
+            long occupied = Math.round(totalRooms * pct / 100.0);
+            long available = totalRooms - occupied;
+            rows.add(new String[]{labels.get(e.getKey()), String.valueOf(available), String.valueOf(occupied), pct + "%"});
+            sumAvail += available;
+            sumOccupied += occupied;
+            sumCapacity += capacity;
+            sumBooked += booked;
+        }
+        if (!buckets.isEmpty()) {
+            int avgPct = sumCapacity == 0 ? 0 : (int) Math.round(sumBooked * 100.0 / sumCapacity);
+            rows.add(new String[]{"Average", String.valueOf(sumAvail), String.valueOf(sumOccupied), avgPct + "%"});
+        }
     }
 
-    private String money(double v) {
-        return (v < 0 ? "-" : "") + String.format("$%,.2f", Math.abs(v));
+    /* ==================== period bucketing helpers ==================== */
+
+    private String periodKey(LocalDate date, String view) {
+        return switch (view) {
+            case "Daily" -> date.toString();
+            case "Monthly" -> YearMonth.from(date).toString();
+            default -> date.with(DayOfWeek.MONDAY).toString();
+        };
+    }
+
+    private String periodLabel(LocalDate date, String view) {
+        return switch (view) {
+            case "Daily" -> date.format(DAY_FMT);
+            case "Monthly" -> date.format(MONTH_FMT);
+            default -> weekLabel(date.with(DayOfWeek.MONDAY));
+        };
+    }
+
+    private String weekLabel(LocalDate weekStart) {
+        LocalDate weekEnd = weekStart.plusDays(6);
+        if (weekStart.getMonth() == weekEnd.getMonth()) {
+            return weekStart.format(MONTH_DAY_FMT) + "–" + weekEnd.getDayOfMonth();
+        }
+        return weekStart.format(MONTH_DAY_FMT) + " – " + weekEnd.format(MONTH_DAY_FMT);
+    }
+
+    private long periodLengthInDays(String key, String view) {
+        return switch (view) {
+            case "Daily" -> 1;
+            case "Monthly" -> YearMonth.parse(key).lengthOfMonth();
+            default -> 7;
+        };
+    }
+
+    private BigDecimal nz(BigDecimal v) {
+        return v != null ? v : BigDecimal.ZERO;
+    }
+
+    private String money(BigDecimal v) {
+        double d = v.doubleValue();
+        return (d < 0 ? "-" : "") + String.format("$%,.2f", Math.abs(d));
     }
 
     /* ---------- export ---------- */

@@ -12,6 +12,7 @@ import ca.senecacollege.hotelreservation.hotelreservation.model.Room;
 import ca.senecacollege.hotelreservation.hotelreservation.model.RoomTypeEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -105,13 +106,15 @@ public final class DataSeeder {
         em.persist(new Addon("SPA", "Spa Package", new BigDecimal("79.99"), "PER_STAY"));
     }
 
+    /**
+     * Demo staff accounts. Passwords are hashed with BCrypt before being stored — the
+     * plaintext values below only ever exist in memory, for the length of this method.
+     */
     private static Map<String, AdminUser> seedAdmins(EntityManager em) {
-        // NOTE: password_hash values are placeholders. The security owner should replace
-        // these with real BCrypt hashes (BCrypt.hashpw) for the demo credentials.
         Map<String, AdminUser> map = new HashMap<>();
-        AdminUser reyes = new AdminUser("m.reyes", "$2a$10$PLACEHOLDERplaceholderHashReyes", "M. Reyes", "Manager");
-        AdminUser singh = new AdminUser("a.singh", "$2a$10$PLACEHOLDERplaceholderHashSingh", "A. Singh", "Admin");
-        AdminUser diaz = new AdminUser("a.diaz", "$2a$10$PLACEHOLDERplaceholderHashDiazz", "A. Diaz", "Admin");
+        AdminUser reyes = new AdminUser("m.reyes", BCrypt.hashpw("maple123", BCrypt.gensalt()), "M. Reyes", "Manager");
+        AdminUser singh = new AdminUser("a.singh", BCrypt.hashpw("desk123", BCrypt.gensalt()), "A. Singh", "Admin");
+        AdminUser diaz = new AdminUser("a.diaz", BCrypt.hashpw("diaz123", BCrypt.gensalt()), "A. Diaz", "Admin");
         em.persist(reyes);
         em.persist(singh);
         em.persist(diaz);

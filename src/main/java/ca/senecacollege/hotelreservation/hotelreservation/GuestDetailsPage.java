@@ -280,8 +280,7 @@ public class GuestDetailsPage implements Initializable {
 
     @FXML
     private void onRulesClicked() {
-        // TODO: show the rules & regulations screen/dialog
-        System.out.println("Rules & regulations");
+        SceneNavigator.goToRules(clockLabel, "kiosk-guest-details.fxml");
     }
 
     @FXML
