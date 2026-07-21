@@ -245,9 +245,16 @@ public class AdminWaitlistPage implements Initializable, WaitlistNotifier.RoomFr
         double balance = Math.round(ReservationStore.priceOf(entry.roomType)
                 * entry.qty * nights * 1.13 * 100) / 100.0;
 
-        ReservationStore.add(new Reservation(resNo, entry.guest, "(—) on file",
-                entry.desiredFrom, nights, entry.qty, entry.roomType, "Confirmed", balance));
-        waitlistRepository.markInactive(entry.id);
+        try {
+            ReservationStore.add(new Reservation(resNo, entry.guest, "(—) on file",
+                    entry.desiredFrom, nights, entry.qty, entry.roomType, "Confirmed", balance));
+            waitlistRepository.markInactive(entry.id);
+        } catch (RuntimeException ex) {
+            warn("Could not convert to reservation",
+                    "Something went wrong while creating the reservation for " + entry.guest
+                            + ".\nPlease try again.\n\nDetails: " + ex.getMessage());
+            return;
+        }
         refresh();
 
         String roomSuffix = assignedRoom != null ? " (Room " + assignedRoom + ")" : "";
